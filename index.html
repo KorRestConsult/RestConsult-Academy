@@ -21,7 +21,7 @@
 <meta name="theme-color" content="#f7f4ed">
 <title>KORREST AI — Департамент Сервиса</title>
 <style>
-  #korrestBoot{position:fixed;inset:0;z-index:30000;display:grid;place-items:center;background:#141414;color:#f7f3eb;opacity:1;visibility:visible;transition:opacity .42s ease,visibility .42s ease;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif}
+  #korrestBoot{position:fixed;inset:0;z-index:30000;display:grid;place-items:center;background:#141414;color:#f7f3eb;opacity:1;visibility:visible;transition:opacity .18s ease,visibility .18s ease;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif}
   #korrestBoot.kb-hide{opacity:0;visibility:hidden;pointer-events:none}
   .kb-wrap{width:min(420px,calc(100vw - 52px));text-align:center;transform:translateY(-2vh)}
   .kb-mark{width:76px;height:76px;margin:0 auto 24px;display:grid;place-items:center;border:1px solid rgba(247,243,235,.22);border-radius:23px;font-size:31px;font-weight:900;letter-spacing:-.06em;animation:kbIn .65s cubic-bezier(.2,.8,.2,1) both}
@@ -35,31 +35,31 @@
   @media(max-width:620px){.kb-wrap{width:calc(100vw - 36px)}.kb-mark{width:66px;height:66px;border-radius:20px;font-size:28px;margin-bottom:20px}.kb-product{font-size:9px;letter-spacing:.18em}}
   @media(prefers-reduced-motion:reduce){.kb-mark,.kb-brand,.kb-product,.kb-rule:after{animation:none}}
 </style>
-<link rel="stylesheet" href="style.css?v=20260909-1210">
-<link rel="stylesheet" href="polish.css?v=20260909-1210">
-<link rel="stylesheet" href="viewport.css?v=20260909-1210">
-<link rel="stylesheet" href="pin.css?v=20260909-1210">
-<link rel="stylesheet" href="employee.css?v=20260909-1210">
-<link rel="stylesheet" href="knowledge-actions.css?v=20260909-1210">
-<link rel="stylesheet" href="assignments.css?v=20260909-1210">
-<link rel="stylesheet" href="presentation-flow.css?v=20260909-1210">
-<link rel="stylesheet" href="slow-import.css?v=20260909-1210">
-<link rel="stylesheet" href="attestation.css?v=20260909-1210">
-<link rel="stylesheet" href="onboarding.css?v=20260909-1210">
-<link rel="stylesheet" href="role-handoff.css?v=20260909-1210">
-<link rel="stylesheet" href="mobile-app.css?v=20260909-1210">
-<link rel="stylesheet" href="sales-finale.css?v=20260909-1225">
-<link rel="stylesheet" href="buyer-audit.css?v=20260909-1210">
-<link rel="stylesheet" href="responsive-audit.css?v=20260909-1210">
-<link rel="stylesheet" href="sales-intro.css?v=20260909-1225">
-<link rel="stylesheet" href="about-contact.css?v=20260909-1305">
-<link rel="stylesheet" href="presentation-ready.css?v=20261117-intro-back-1">
-<link rel="stylesheet" href="adaptive-layout-20261117.css?v=20261117-adapt-1">
-<link rel="stylesheet" href="safari-intro-scroll-20261117.css?v=20261124-tour-2">
-<link rel="stylesheet" href="mobile-stable-20261124.css?v=1">
-<link rel="stylesheet" href="resort-light-20261124.css?v=2">
-<link rel="stylesheet" href="botanical.css?v=2">
-<link rel="stylesheet" href="compact-demo.css?v=1"><link rel="stylesheet" href="native-guide.css?v=12">
+<link rel="stylesheet" href="academy-bundle-af6f4e191b.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
 <div id="korrestBoot" aria-label="Загрузка KORREST AI">
@@ -80,9 +80,9 @@
     const appReady=document.getElementById('root')?.children.length>0;
     const introReady=document.getElementById('raProductIntro')?.classList.contains('show');
     if(!appReady&&!introReady&&Date.now()-started<3500)return;
-    const wait=Math.max(0,650-(Date.now()-started));
+    const wait=Math.max(0,120-(Date.now()-started));
     closed=true;
-    setTimeout(()=>{boot.classList.add('kb-hide');setTimeout(()=>boot.remove(),460)},wait);
+    setTimeout(()=>{boot.classList.add('kb-hide');setTimeout(()=>boot.remove(),220)},wait);
   }
   const probe=setInterval(()=>{ready();if(closed)clearInterval(probe)},60);
   setTimeout(ready,3600);
