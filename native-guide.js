@@ -91,12 +91,12 @@ function goBack(){
  if(!prev){prev={route:'roles',auth:null,role:null,currentEmployee:state.currentEmployee}}
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
-function clear(){target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
+function clear(keepArrow=false){if(!keepArrow)window.RAPencil?.hide();target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
 function finish(){state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.show();schedule()}
 function place(){
 frame=0;document.body.classList.toggle('ra-native-guided',guided());
-if(document.getElementById('raProductIntro')?.classList.contains('show')){clear();return}
+if(document.getElementById('raProductIntro')?.classList.contains('show')){clear(true);const intro=document.getElementById('raProductIntro');window.RAPencil?.point(intro.querySelector('.ra-intro-categories'),intro.querySelector('[data-start]'),'intro');return}
 if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
 document.getElementById('raDemoLaunch')?.remove();
 const s=currentStep();if(!s){clear();return}
@@ -165,6 +165,18 @@ for(let p=panel?panel.parentElement:el.parentElement;p&&p!==document.body;p=p.pa
 spot.style.display=right>l&&bottom>t?'block':'none';
 Object.assign(spot.style,{left:l+'px',top:t+'px',width:Math.max(0,right-l)+'px',height:Math.max(0,bottom-t)+'px'});
 spot.style.borderRadius=Math.min(18,Math.max(7,r.height/4))+'px';
+let arrowTarget=card.querySelector('[data-finish],[data-rating-next]')||el;
+if(el.matches('.pin-keypad')){
+ const pin=state.route==='manager-pin'?(state.managerPin||'0000'):(current().pin||'1111');
+ const digit=pin[pinBuffer.length];
+ if(digit)arrowTarget=[...el.querySelectorAll('.pin-key')].find(b=>b.querySelector('strong')?.textContent===digit)||el;
+}
+if(el.matches('input[type="checkbox"]'))arrowTarget=el;
+const arrowSource=card.contains(arrowTarget)?card.querySelector('p'):card;
+const quizIndex=state.route==='slow-self-quiz'?state.slowSelfQuiz?.index:state.route==='assigned-attestation'?state.activeAttestation?.index:state.route==='assigned-test'?state.activeQuiz?.index:'';
+const arrowKey=[key,state.route,quizIndex,pinBuffer.length,el.getAttribute('onclick')||'',arrowTarget.getAttribute('onclick')||'',state.studyAssignmentId?document.querySelector('#modal h2')?.textContent||'':''].join('|');
+window.RAPencil?.point(arrowSource,arrowTarget,arrowKey);
+
 
 }
 function rSelfResult(e){return state.route==='slow-self-quiz'&&state.slowSelfQuiz&&!state.slowSelfQuiz.itemId&&state.slowSelfQuiz.index>=state.slowSelfQuiz.questions.length&&e.target.closest('[data-self-request],[data-self-return]')}
@@ -187,7 +199,7 @@ if(staff&&s.n===7&&m&&close)state.guideSchedule=true;
 if(staff&&s.n===8&&m&&close)state.guidePay=true;
 save();setTimeout(schedule,30)
 },true);
-window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
+window.addEventListener('ra-intro-change',schedule);window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
 const base=render;render=function(){base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
