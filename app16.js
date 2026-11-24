@@ -35,95 +35,95 @@
 
   const tours={
     'handoff-manager':[
-      {sel:'.quick-role-waiter',title:'Вы всё ещё в кабинете управляющего',text:'Сейчас вы управляете системой от лица руководителя. Аттестация уже назначена. Чтобы увидеть вторую сторону процесса, нажмите «Официант» и продолжите демо глазами сотрудника.',action:true}
+      {sel:'.quick-role-waiter',title:'Перейдите в кабинет официанта',action:true}
     ],
     'handoff-staff-select':[
-      {sel:'.staff-select-head',title:'Задание уже ждёт сотрудника',text:'Система сама показывает, сколько новых заданий сейчас у официантов.'},
-      {sel:'.handoff-target',title:'Выберите нужного официанта',text:'Красная метка указывает сотрудника, которому управляющий только что назначил задание. После подсказки нажмите его карточку.',action:true}
+      {sel:'.staff-select-head',title:'Задание уже ждёт сотрудника'},
+      {sel:'.handoff-target',title:'Выберите нужного официанта',action:true}
     ],
     'handoff-staff-pin':[
-      {sel:'.pin-keypad',title:'Войдите как сотрудник',text:'Введите персональный PIN. Демо-код показан под клавиатурой. После четвёртой цифры откроется кабинет с новым заданием.',action:true}
+      {sel:'.pin-keypad',title:'Войдите как сотрудник',action:true}
     ],
     'handoff-staff-home':[
-      {sel:'.attestation-inbox, .notification-card',title:'Вот назначенная аттестация',text:'Управляющий назначил внутреннюю аттестацию. Её результат войдёт в рейтинг сотрудника.'},
-      {sel:'.attestation-inbox .ra-assignment-actions .ghost',title:'Изучите «Стрипсы»',text:'Начните с одной карточки. После чтения состава, вкуса и подсказки по продаже пройдёте короткую проверку именно по стрипсам.',action:true}
+      {sel:'.attestation-inbox, .notification-card',title:'Вот назначенная аттестация'},
+      {sel:'.attestation-inbox .ra-assignment-actions .ghost',title:'Изучите «Стрипсы»',action:true}
     ],
     'roles':[
-      {sel:'.role-intro',title:'Restaurant Academy',text:'Это демонстрация глазами ресторана: сначала управляющий назначает аттестацию, затем официант получает её, проходит и рейтинг обновляется.'},
-      {sel:'.role-card:nth-child(1)',title:'Начните с управляющего',text:'Чтобы увидеть главный бизнес-сценарий, после этой подсказки нажмите «Управляющий». Официанта и бармена мы покажем дальше по цепочке.',action:true}
+      {sel:'.role-intro',title:'Демонстрация сервиса'},
+      {sel:'.role-card:nth-child(1)',title:'Начните с управляющего',action:true}
     ],
     'manager-pin':[
-      {sel:'.pin-keypad',title:'Вход управляющего · PIN 0000',text:'Нажмите 0 → 0 → 0 → 0. После четвёртой цифры кабинет откроется автоматически.',action:true}
+      {sel:'.pin-keypad',title:'Вход управляющего · PIN 0000',action:true}
     ],
     'staff-select:Официант':[
-      {sel:'.head',title:'Выберите сотрудника',text:'В реальном заведении каждый сотрудник входит в свой кабинет под персональным PIN.'},
-      {sel:'.team-grid .card, .team-grid .employee-compact',title:'Личный профиль',text:'Нажмите на нужного официанта. Рейтинг и история принадлежат конкретному сотруднику.'}
+      {sel:'.head',title:'Выберите сотрудника'},
+      {sel:'.team-grid .card, .team-grid .employee-compact',title:'Личный профиль'}
     ],
     'staff-select:Бармен':[
-      {sel:'.head',title:'Выберите сотрудника',text:'У каждого бармена свой кабинет, задания, история тестов и рейтинг.'},
-      {sel:'.team-grid .card, .team-grid .employee-compact',title:'Личный профиль',text:'Выберите бармена и войдите его персональным PIN.'}
+      {sel:'.head',title:'Выберите сотрудника'},
+      {sel:'.team-grid .card, .team-grid .employee-compact',title:'Личный профиль'}
     ],
     'staff-pin':[
-      {sel:'.pin-keypad',title:'Вход сотрудника',text:'Демо-код крупно показан под клавиатурой. В рабочей версии у каждого сотрудника свой PIN.',action:true}
+      {sel:'.pin-keypad',title:'Вход сотрудника',action:true}
     ],
     'manager-home':[
-      {sel:'.team-score-card',title:'Рейтинг команды',text:'Здесь видна подготовка всей команды. Рейтинг считают только по итоговым аттестациям, а тренировки его не меняют.'},
-      {sel:'.employee-compact[data-employee-id="e1"]',title:'Теперь откройте сотрудника',text:'После подсказки нажмите карточку Ильи. Внутри увидите, из чего складывается рейтинг и сможете назначить аттестацию.',action:true}
+      {sel:'.team-score-card',title:'Рейтинг команды'},
+      {sel:'.employee-compact[data-employee-id="e1"]',title:'Откройте карточку Ильи',action:true}
     ],
     'employee-detail':[
-      {sel:'.employee-detail-head',title:'Профиль сотрудника',text:'Сверху — общий рейтинг. Он автоматически пересчитывается после каждой новой аттестации.'},
-      {sel:'.knowledge-row-wrap[data-demo-block] > .knowledge-row',title:'Откройте блок «Горячие закуски»',text:'Нажмите строку «Горячие закуски». Она раскроется и покажет два действия: тренировочный тест и внутреннюю аттестацию.',action:true}
+      {sel:'.employee-detail-head',title:'Профиль сотрудника'},
+      {sel:'.knowledge-row-wrap[data-demo-block] > .knowledge-row',title:'Откройте блок «Горячие закуски»',action:true}
     ],
     'employee-actions':[
-      {sel:'.knowledge-row-wrap.open .knowledge-actions .ghost',title:'Тренировочный тест',text:'Его можно отправить сотруднику в любой момент. Он проверяет знания, но не меняет рейтинг.'},
-      {sel:'.knowledge-row-wrap.open .knowledge-actions .primary',title:'Проверим только «Стрипсы»',text:'Нажмите «Проверить Стрипсы». Сотрудник изучит одно блюдо и ответит на вопросы только о нём. Проверка всего блока здесь отдельная.',action:true}
+      {sel:'.knowledge-row-wrap.open .knowledge-actions .ghost',title:'Тренировка · без изменения рейтинга'},
+      {sel:'.knowledge-row-wrap.open .knowledge-actions .primary',title:'Назначьте проверку «Стрипсы»',action:true}
     ],
     'staff-home':[
-      {sel:'.hero',title:'Личный кабинет',text:'Сотрудник видит свой текущий рейтинг и понимает, что именно влияет на него.'},
-      {sel:'.scorebox',title:'Мой рейтинг',text:'Эта цифра меняется только после внутренней аттестации. Обычная тренировка её не портит.'},
-      {sel:'.attestation-inbox, .notification-card',title:'Задания от управляющего',text:'Если управляющий отправил тест или назначил аттестацию, новое задание появляется здесь сразу сразу.'},
-      {sel:'.area-card:first-child',title:'Изучение меню',text:'Откройте кухню или бар, чтобы учить реальные позиции Slow и запускать тренировочные тесты.'},
-      {sel:'#nav',title:'Навигация',text:'Кабинет, кухня и бар всегда доступны одним нажатием.'}
+      {sel:'.hero',title:'Личный кабинет'},
+      {sel:'.scorebox',title:'Мой рейтинг'},
+      {sel:'.attestation-inbox, .notification-card',title:'Задания от управляющего'},
+      {sel:'.area-card:first-child',title:'Изучение меню'},
+      {sel:'#nav',title:'Навигация'}
     ],
     'learn:kitchen':[
-      {sel:'.head',title:'Кухня Slow',text:'Здесь уже загружено реальное демонстрационное меню Slow с фотографиями, составами, ценами и описаниями.'},
-      {sel:'.toolbar',title:'Разделы меню',text:'Переключайтесь между холодными и горячими закусками, салатами, супами, горячими блюдами и десертами.'},
-      {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка блюда',text:'Откройте блюдо: сотрудник увидит фото, состав, вкус и сервисную подсказку.'},
-      {sel:'#menuBlock .ghost, .head .ghost',title:'Тест по блоку',text:'Можно проверить не одну позицию, а целый раздел меню. Вопросы берутся из банка Slow.'}
+      {sel:'.head',title:'Кухня Slow'},
+      {sel:'.toolbar',title:'Разделы меню'},
+      {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка блюда'},
+      {sel:'#menuBlock .ghost, .head .ghost',title:'Тест по блоку'}
     ],
     'learn:bar':[
-      {sel:'.head',title:'Бар Slow',text:'В баре собраны реальные позиции: коктейли, вино, крепкий алкоголь, пиво, чай и безалкогольные напитки.'},
-      {sel:'.toolbar',title:'Разделы бара',text:'Выберите нужный блок и изучайте его отдельно.'},
-      {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка напитка',text:'Фото, описание, цена и ключевые вкусовые характеристики собраны в одной карточке.'},
-      {sel:'#menuBlock .ghost, .head .ghost',title:'Проверить знания',text:'Тесты используют реальные сценарии продажи и сервиса, а не только зубрёжку цены.'}
+      {sel:'.head',title:'Бар Slow'},
+      {sel:'.toolbar',title:'Разделы бара'},
+      {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка напитка'},
+      {sel:'#menuBlock .ghost, .head .ghost',title:'Проверить знания'}
     ],
     'assigned-test':[
-      {sel:'.quiz-top',title:'Тренировочный тест',text:'Это тренировка: управляющий увидит результат, но рейтинг сотрудника не изменится.'},
-      {sel:'.quiz-progress',title:'Прогресс',text:'Сотрудник всегда видит, сколько вопросов осталось.'},
-      {sel:'.quiz-options',title:'Ответ и обучение',text:'После ответа Slow показывает верно или неверно и объясняет правильную логику.'}
+      {sel:'.quiz-top',title:'Тренировка · без изменения рейтинга'},
+      {sel:'.quiz-progress',title:'Прогресс'},
+      {sel:'.quiz-options',title:'Ответ и обучение'}
     ],
     'slow-self-quiz':[
-      {sel:'.quiz-top',title:'Самостоятельная тренировка',text:'Сотрудник может учиться сам, даже если управляющий ничего не назначал.'},
-      {sel:'.quiz-options',title:'Практика по меню',text:'Вопросы построены на составе, вкусе, продаже, сервисе и реальных ситуациях с гостем.'}
+      {sel:'.quiz-top',title:'Самостоятельная тренировка'},
+      {sel:'.quiz-options',title:'Практика по меню'}
     ],
     'assigned-test-result':[
-      {sel:'.quiz-result',title:'Результат тренировки',text:'Результат сохранён и доступен управляющему. Главный рейтинг при этом остаётся прежним.'}
+      {sel:'.quiz-result',title:'Результат тренировки'}
     ],
     'assigned-attestation':[
-      {sel:'.quiz-top',title:'Внутренняя аттестация',text:'Эту аттестацию назначил управляющий. Результат после завершения войдёт в рейтинг сотрудника.'},
-      {sel:'.quiz-options',title:'Начните аттестацию',text:'Выберите вариант ответа. После каждого ответа нажимайте «Дальше». После последнего вопроса результат сохранится, а рейтинг сотрудника пересчитается автоматически.',action:true}
+      {sel:'.quiz-top',title:'Аттестация · влияет на рейтинг'},
+      {sel:'.quiz-options',title:'Выберите ответ',action:true}
     ],
     'handoff-manager-pin-return':[
-      {sel:'.pin-keypad',title:'Вернитесь управляющим',text:'Введите демо-PIN 0000. После входа покажем, что получил управляющий после аттестации.',action:true}
+      {sel:'.pin-keypad',title:'Вернитесь управляющим',action:true}
     ],
     'handoff-manager-result':[
-      {sel:'.notification-card',title:'Результат уже у управляющего',text:'Аттестация завершена. Управляющий сразу видит итоговый результат и новый рейтинг сотрудника.'},
-      {sel:'.employee-compact[data-result-target]',title:'Рейтинг обновлён',text:'Откройте сотрудника, чтобы увидеть новый результат в блоке знаний и в истории аттестаций.',action:true}
+      {sel:'.notification-card',title:'Результат уже у управляющего'},
+      {sel:'.employee-compact[data-result-target]',title:'Рейтинг обновлён',action:true}
     ],
     'assigned-attestation-result':[
-      {sel:'.attestation-result .result-circle',title:'Итоговый результат',text:'Это результат внутренней проверки знаний, который сохраняется в истории сотрудника.'},
-      {sel:'.rating-after',title:'Рейтинг пересчитан',text:'Сразу видно новый рейтинг блока, направления и общий рейтинг сотрудника.'},
-      {sel:'.quick-role-manager',title:'Замкните цикл',text:'Теперь вернитесь в кабинет управляющего. Там появится результат и обновлённый рейтинг сотрудника.',action:true}
+      {sel:'.attestation-result .result-circle',title:'Итоговый результат'},
+      {sel:'.rating-after',title:'Рейтинг пересчитан'},
+      {sel:'.quick-role-manager',title:'Вернитесь к управляющему',action:true}
     ]
   };
 
@@ -135,7 +135,7 @@
   function ensureUI(){
     if(document.getElementById('raTour'))return;
     const root=document.createElement('div');root.id='raTour';root.className='ra-tour';
-    root.innerHTML='<div class="ra-tour-spot"></div><div class="ra-tour-card"><div class="ra-tour-top"><span class="ra-tour-count"></span><div class="ra-tour-top-actions"><button class="ra-tour-repeat" type="button">Повторить</button><button class="ra-tour-skip" type="button">Пропустить</button></div></div><h3></h3><p></p><div class="ra-tour-dots"></div><div class="ra-tour-actions"><button class="ra-tour-back" type="button">Назад</button><button class="ra-tour-next" type="button">Далее</button></div></div>';
+    root.innerHTML='<div class="ra-tour-spot"></div><div class="ra-tour-card"><div class="ra-tour-top"><span class="ra-tour-count"></span><div class="ra-tour-top-actions"><button class="ra-tour-repeat" type="button">Повторить</button><button class="ra-tour-skip" type="button">Пропустить</button></div></div><h3></h3><div class="ra-tour-dots"></div><div class="ra-tour-actions"><button class="ra-tour-back" type="button">Назад</button><button class="ra-tour-next" type="button">Далее</button></div></div>';
     document.body.appendChild(root);
     root.querySelector('.ra-tour-skip').onclick=()=>finish('skip');
     root.querySelector('.ra-tour-repeat').onclick=()=>place();
@@ -177,10 +177,10 @@
     if(step.action){el.style.pointerEvents='auto';el.style.touchAction='manipulation'}
     const pad=8,left=Math.max(6,r.left-pad),top=Math.max(6,r.top-pad),width=Math.min(innerWidth-left-6,r.width+pad*2),height=Math.min(innerHeight-top-6,r.height+pad*2);
     Object.assign(spot.style,{left:left+'px',top:top+'px',width:Math.max(24,width)+'px',height:Math.max(24,height)+'px'});
-    card.querySelector('h3').textContent=step.title;card.querySelector('p').textContent=step.text;
+    card.querySelector('h3').textContent=step.title;
     card.querySelector('.ra-tour-count').textContent=(index+1)+' / '+steps.length;
     card.querySelector('.ra-tour-back').disabled=index===0&&!previousTourRoute();
-    card.querySelector('.ra-tour-next').textContent=step.action?'Закрыть и выполнить':(index===steps.length-1?'Понятно':'Далее');
+    card.querySelector('.ra-tour-next').textContent=step.action?'Понятно':(index===steps.length-1?'Понятно':'Далее');
     card.querySelector('.ra-tour-dots').innerHTML=steps.map((_,i)=>'<i class="'+(i===index?'on':'')+'"></i>').join('');
     requestAnimationFrame(()=>{
       if(token!==placementToken||!active)return;
