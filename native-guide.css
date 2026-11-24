@@ -84,3 +84,8 @@ body.ra-guide-reading #modal{overflow-y:auto!important;-webkit-overflow-scrollin
 body.ra-guide-reading #modal .ra-study-actions{position:static!important;inset:auto!important;background:transparent!important;box-shadow:none!important;padding:16px 0 4px!important}
 body.ra-guide-reading #root{padding-bottom:24px!important}
 @media(max-width:520px){.ra-learning-note{padding:10px;gap:4px}.ra-learning-note b{font-size:17px}.ra-learning-note p{font-size:12px}.ra-learning-controls{flex-direction:column}}
+
+.ra-reading-footer{display:flex;justify-content:flex-end;padding:18px 0 6px;border-top:1px solid #dedfd3;margin-top:16px}
+.ra-reading-footer .primary{min-height:46px}
+body.ra-guide-reading .ra-reading-footer .primary:disabled{opacity:.45}
+@media(max-width:520px){.ra-reading-footer .primary{width:100%}}

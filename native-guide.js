@@ -92,7 +92,7 @@ function goBack(){
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
 function clear(keepArrow=false){if(!keepArrow)window.RAPencil?.hide();target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
-function finish(){state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
+function finish(){document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.show();schedule()}
 // Scroll the actual scrolling container and cancel competing smooth navigation.
 const priorScroll=window.raScrollPage;
@@ -113,32 +113,38 @@ function moveIntoSafeArea(el,top,bottom){
 }
 // Reading and answering are real work, not navigation targets.
 function learningSurface(){
+ if(modal()){const p=document.getElementById('modal');if(p.querySelector('.ra-ops-row,.ra-check-phase,.ra-study-facts,[data-training-read]'))return p}
  if(state.auth!=='staff')return null;
- if(modal()&&document.querySelector('#modal .ra-study-facts'))return document.getElementById('modal');
  if(['assigned-test','assigned-test-result','assigned-attestation','assigned-attestation-result','slow-self-quiz'].includes(state.route))return document.querySelector('.quiz-shell')||document.querySelector('.official-attestation');
  return null
 }
 function learningNote(surface,s){
  clear();
  document.body.classList.add('ra-guide-reading');
- const studying=surface.id==='modal',result=!!surface.querySelector('.quiz-result,.attestation-result');
- const title=studying?'Изучите в своём темпе':result?'Результат обучения':'Проверка знаний';
- const text=studying?'Все сведения доступны для свободного чтения. Когда будете готовы, нажмите кнопку в конце карточки.':result?s.desc:state.route==='assigned-attestation'?'Ответьте самостоятельно. Рейтинг изменится после принятия результата управляющим.':'Прочитайте вопрос, выберите ответ и изучите объяснение. Тренировка не меняет официальный рейтинг.';
+ const isModal=surface.id==='modal',studying=!!surface.querySelector('.ra-study-facts'),checks=!!surface.querySelector('.ra-check-phase'),report=!!surface.querySelector('.ra-ops-row'),mini=!!surface.querySelector('[data-training-read]'),result=!!surface.querySelector('.quiz-result,.attestation-result');
+ const title=report?s.title:checks?'Контроль стандартов':mini?'Подготовка к тренингу':studying?'Изучите в своём темпе':result?'Результат обучения':'Проверка знаний';
+ const text=report?s.desc:checks?(state.auth==='manager'?'Откройте зал или бар, раскройте нужный раздел. После просмотра продолжите демонстрацию.':'Отметьте выполненную задачу. Можно раскрыть любой раздел чек-листа.'):mini?s.desc:studying?'Все сведения доступны для свободного чтения. Когда будете готовы, нажмите кнопку в конце карточки.':result?s.desc:state.route==='assigned-attestation'?'Ответьте самостоятельно. Рейтинг изменится после принятия результата управляющим.':'Прочитайте вопрос, выберите ответ и изучите объяснение. Тренировка не меняет официальный рейтинг.';
  let note=surface.querySelector(':scope > .ra-learning-note');
  if(!note){
   note=document.createElement('aside');note.className='ra-learning-note';
   note.innerHTML='<div><b></b><p></p></div><div class="ra-learning-controls"><button type="button" data-learning-back>Назад</button><button type="button" data-learning-quit>Выйти</button></div>';
-  const anchor=studying?surface.querySelector('.modal-head'):surface.querySelector('.quiz-top');
+  const anchor=isModal?surface.querySelector('.modal-head'):surface.querySelector('.quiz-top');
   if(anchor&&anchor.parentElement===surface)anchor.after(note);else surface.prepend(note);
   note.querySelector('[data-learning-back]').onclick=goBack;
   note.querySelector('[data-learning-quit]').onclick=finish;
  }
  note.querySelector('b').textContent=title;note.querySelector('p').textContent=text;
+ if(report||checks){
+  let footer=surface.querySelector('.ra-reading-footer');
+  if(!footer){footer=document.createElement('div');footer.className='ra-reading-footer';footer.innerHTML='<button type="button" class="primary" data-report-continue>Продолжить →</button>';surface.append(footer);footer.querySelector('button').onclick=()=>surface.querySelector('.closebtn')?.click()}
+  const b=footer.querySelector('button');b.disabled=checks&&state.auth==='staff'&&!state.guideHall;
+ }
+
 }
 function place(){
 frame=0;document.body.classList.toggle('ra-native-guided',guided());
 const readingSurface=guided()?learningSurface():null;document.body.classList.toggle('ra-guide-reading',!!readingSurface);
-if(!readingSurface)document.querySelectorAll('.ra-learning-note').forEach(n=>n.remove());
+if(!readingSurface)document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());
 const pinMode=['manager-pin','staff-pin'].includes(state.route);document.body.classList.toggle('ra-guide-pin',guided()&&pinMode);document.documentElement.style.setProperty('--ra-visible-height',(window.visualViewport?.height||innerHeight)+'px');
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear(true);const intro=document.getElementById('raProductIntro');window.RAPencil?.point(intro.querySelector('.ra-intro-categories'),intro.querySelector('[data-start]'),'intro');return}
 if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
@@ -251,7 +257,7 @@ if(staff&&rSelfResult(e))state.guideSelfSeen=true;
 if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
 if(staff&&close&&state.studyAssignmentId){state.studyAssignmentId=null;state.route='home';setTimeout(render,0)}
 if(staff&&s.n===5&&e.target.closest('[data-training-read]'))state.guideMini=true;
-if(staff&&s.n===6&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=e.target.checked;
+if(staff&&s.n===6&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=!!document.querySelector('#modal input[data-shift-id]:checked');
 if(staff&&s.n===6&&m&&close&&state.guideHall)state.guideHallClosed=true;
 if(staff&&s.n===7&&m&&close)state.guideSchedule=true;
 if(staff&&s.n===8&&m&&close)state.guidePay=true;
