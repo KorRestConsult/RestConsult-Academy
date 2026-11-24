@@ -172,7 +172,7 @@
     let html='';
     function assignedRow(t,isAttestation){
       const s=studyStatus(t);
-      const label=isAttestation?'АТТЕСТАЦИЯ':t.workflowPreparation?'САМОСТОЯТЕЛЬНАЯ ПОДГОТОВКА':'ТРЕНИРОВКА';
+      const label=isAttestation?'АТТЕСТАЦИЯ':t.workflowPreparation?(t.assignedByManager?'ОТ УПРАВЛЯЮЩЕГО':t.demoExample?'ПРИМЕР ЗАДАНИЯ':'САМОСТОЯТЕЛЬНАЯ ПОДГОТОВКА'):'ТРЕНИРОВКА';
       const allRead=s.completed;
       const action=isAttestation?'openAssignedAttestation':'openAssignedTest';
       const title=isAttestation?'Начать аттестацию':'Начать тест';

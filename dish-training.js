@@ -9,7 +9,7 @@ if(!buildDemoQuestions(t).length){showToast('Нет вопросов по блю
 state.assignedTests.push(t);state.demoHandoff={employeeId:id,stage:'manager'};closeModal();save();render();showToast('Тест назначен: '+x.name);});
 };
 const guided=()=>!!state.demoRunId&&localStorage.getItem('ra-tour:optout')!=='1';
-const baseRole=openRole;openRole=function(r){if(guided()&&r==='Управляющий'){state.role=r;state.auth='manager';state.route='home';save();render()}else baseRole(r)};
-const baseSelect=selectStaff;selectStaff=function(id){if(guided()){state.currentEmployee=id;state.auth='staff';state.route='home';if(state.demoHandoff?.employeeId===id)state.demoHandoff.stage='home';save();render()}else baseSelect(id)};
-const baseReturn=window.quickSwitchToManager;window.quickSwitchToManager=function(){if(!guided())return baseReturn();const result=state.assignedTests.filter(t=>t.status==='done'&&t.assignmentType==='attestation').at(-1);state.role='Управляющий';state.auth='manager';state.route='home';state.filter='Все';state.demoHandoff=result?{employeeId:result.employeeId,stage:'manager-result'}:null;save();render()};
+const baseRole=openRole;openRole=function(r){if(guided()&&!state.compactDemo&&r==='Управляющий'){state.role=r;state.auth='manager';state.route='home';save();render()}else baseRole(r)};
+const baseSelect=selectStaff;selectStaff=function(id){if(guided()&&!state.compactDemo){state.currentEmployee=id;state.auth='staff';state.route='home';if(state.demoHandoff?.employeeId===id)state.demoHandoff.stage='home';save();render()}else baseSelect(id)};
+const baseReturn=window.quickSwitchToManager;window.quickSwitchToManager=function(){if(!guided()||state.compactDemo)return baseReturn();const result=state.assignedTests.filter(t=>t.status==='done'&&t.assignmentType==='attestation').at(-1);state.role='Управляющий';state.auth='manager';state.route='home';state.filter='Все';state.demoHandoff=result?{employeeId:result.employeeId,stage:'manager-result'}:null;save();render()};
 })();

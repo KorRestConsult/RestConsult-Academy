@@ -6,7 +6,7 @@ const prepFor=(id,area,block)=>tasks().find(t=>t.employeeId===id&&t.workflowPrep
 const officialFor=p=>tasks().filter(t=>t.employeeId===p.employeeId&&t.assignmentType==='attestation'&&t.area===p.area&&t.block===p.block&&!t.itemId).at(-1);
 const studied=t=>new Set(state.assignmentStudyProgress?.[t.id]?.reviewedIds||[]).size;
 const total=t=>STOCK[t.area].filter(x=>x.block===t.block&&(!t.itemId||x.id===t.itemId)).length;
-const label=t=>t.workflowPreparation?'Самостоятельная подготовка':t.assignmentType==='attestation'?'Аттестация':'Тест по блюду';
+const label=t=>t.workflowPreparation?(t.assignedByManager?'Тест по разделу от управляющего':t.demoExample?'Учебный пример задания':'Самостоятельная подготовка'):t.assignmentType==='attestation'?'Аттестация':'Тест по блюду';
 const status=t=>t.status==='submitted'?'Ожидает подтверждения':t.status==='rejected'?'На повторную подготовку':t.status==='done'?(t.assignmentType==='attestation'?'Подтверждена':'Выполнено · '+t.score+'%'):t.status==='opened'?'В процессе':studied(t)?'Изучено '+studied(t)+' / '+total(t):'Назначено';
 const action=(cls,fn,txt,attr='')=>'<button class="'+cls+'" '+attr+' onclick="'+fn+'">'+txt+'</button>';
 const arg=x=>"'"+encodeURIComponent(x).replace(/'/g,'%27')+"'";
@@ -58,7 +58,7 @@ const oldResult=trainingTestResultPage;
 trainingTestResultPage=function(){let html=oldResult();const t=byId(state.activeQuiz?.testId);if(t?.workflowPreparation){html=html.replace('Это тренировочный тест — общий рейтинг сотрудника не изменился.',t.score===100?'Блок готов к аттестации. Запросите подтверждение у управляющего.':'Для готовности к аттестации требуется 100%. Повторите тренировку.');}return html};
 function prepPanel(e){
  const t=tasks().filter(x=>x.employeeId===e.id&&x.assignmentType==='training'&&!x.workflowPreparation).at(-1);
- const area=t?.area||'kitchen',block=t?.block||blocksFor(area)[0],p=prepFor(e.id,area,block);
+ const assigned=tasks().filter(x=>x.employeeId===e.id&&x.workflowPreparation).at(-1);const area=assigned?.area||t?.area||'kitchen',block=assigned?.block||t?.block||blocksFor(area)[0],p=prepFor(e.id,area,block);
  if(!block)return '';
  let button='';
  if(!p)button=action('primary','raPrepareBlock('+arg(area)+','+arg(block)+')','Изучить весь раздел','data-prep-start');

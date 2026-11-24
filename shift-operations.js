@@ -14,7 +14,7 @@ const allowed=k=>!!roles[k]&&(state.auth==='manager'||state.auth==='staff'&&role
 const writable=k=>allowed(k)&&(state.auth!=='manager'||k==='shift_manager');
 window.raOpsChecks=function(k=state.auth==='manager'?'hall':role()){
 if(!allowed(k))return;
-let h=state.auth==='manager'?Object.keys(roles).filter(r=>!state.compactDemo||r!=='bar').map(r=>'<button class="ghost" data-shift-role="'+r+'">'+roles[r]+' '+count(r)+'</button>').join(' '):'';
+let h=state.auth==='manager'?Object.keys(roles).map(r=>'<button class="ghost" data-shift-role="'+r+'">'+roles[r]+' '+count(r)+'</button>').join(' '):'';
 h+='<h3>'+roles[k]+' · '+count(k)+'</h3>';
 h+=lists[k].sections.map((s,i)=>'<details class="ra-check-phase" '+(i===0?'open':'')+'><summary>'+esc(s.title)+'</summary>'+s.items.map((x,j)=>{const id=k+'-'+i+'-'+j,v=book()[id];return '<label class="ra-check-item"><input type="checkbox" data-shift-id="'+id+'" '+(v?'checked ':'')+(writable(k)?'':'disabled')+'><span>'+esc(x.text)+(x.time?'<small>'+esc(x.time)+'</small>':'')+(x.note?'<small>'+esc(x.note)+'</small>':'')+(v?'<small>'+esc(v.name)+' · '+esc(v.time)+'</small>':'')+'</span></label>'}).join('')+'</details>').join('');
 modal('Чек-листы',h);

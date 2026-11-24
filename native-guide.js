@@ -4,46 +4,60 @@ const task=k=>state.assignedTests.find(t=>t.employeeId==='e1'&&t.assignmentType=
 const modal=()=>document.getElementById('modalWrap').classList.contains('open');
 const step=(sel,title,desc,n)=>({sel,title,desc,n});
 function currentStep(){
- const t=state.assignedTests.find(x=>x.employeeId==='e1'&&x.assignmentType==='training'&&!x.workflowPreparation),p=state.assignedTests.find(x=>x.employeeId==='e1'&&x.workflowPreparation),a=task('attestation'),m=modal(),r=state.route;
- if(r==='roles')return step('.role-card:first-child','Кабинет управляющего','Знания команды и показатели продаж помогают планировать обучение.',1);
- if(r==='staff-select')return step('.staff-select-card.handoff-target,.staff-select-card[onclick*="e1"]','Кабинет официанта','Персональные задания и собственный прогресс.',4);
+ const id=state.currentEmployee||'e1',t=state.assignedTests.find(x=>x.employeeId===id&&x.workflowPreparation&&x.block==='Салаты'),a=state.assignedTests.find(x=>x.employeeId===id&&x.assignmentType==='attestation'&&x.block==='Салаты'),m=modal(),r=state.route;
+ if(r==='roles'){
+  if(state.guideManagerDone&&!state.guideStaffDone)return step('.role-card:nth-child(2)','Теперь вы — официант','Задание уже сохранено. Войдите в персональный кабинет и увидите работу системы глазами сотрудника.',1);
+  return step('.role-card:first-child','Выберите роль','Два самостоятельных кабинета. Начните с управляющего или выберите официанта.',1)
+ }
+ if(r==='manager-pin')return step('.pin-keypad','Доступ управляющего','Введите демонстрационный PIN: 0000. Управление доступно только после входа.',1);
+ if(r==='staff-select')return step('.staff-select-card[onclick*="e1"]','Выберите сотрудника','Личный кабинет хранит задания, знания и рабочий график.',1);
+ if(r==='staff-pin')return step('.pin-keypad','Персональный вход','Введите демонстрационный PIN: '+(current().pin||'1111')+'. Официант не видит управление командой.',1);
  if(state.auth==='manager'){
-  if(!state.guideSales)return m?step('#modal .closebtn','Коммерческие показатели','Личные продажи и средний чек — ориентиры для оценки эффективности. Закройте отчёт.',1):step('.ra-ops-tile[onclick="raOpsFinance()"]','Контроль продаж','Посмотрите выручку, план и средний чек.',1);
-  if(!t){
-   if(r!=='employee-detail')return step('.employee-compact[data-employee-id="e1"]','Рейтинг знаний','Выберите сотрудника: видно, какие знания нуждаются в проверке.',2);
-   if(m)return step('#modal [data-dish]','Точечная тренировка','Выберите блюдо: состав, вкусные слова, рекомендации и допродажи.',3);
-   if(!document.querySelector('[data-demo-block].open'))return step('[data-demo-block] .knowledge-row','Диагностика знаний','Откройте раздел, чтобы выявить пробелы.',2);
-   return step('[data-demo-block] .knowledge-actions .ghost','Тест по блюду','Тренировка выявляет ошибки, не изменяя рейтинг.',3);
-  }
-  if(p?.requestStatus==='requested')return step('[data-request-assign]','Официант готов к аттестации','Управляющий видит тренировку на 100% и изученные позиции. Теперь можно назначить итоговую проверку.',7);
-  if(a?.status==='submitted'){
-   if(m)return step('[data-review-accept]','Решение управляющего','Оцените сервис, продажи и стандарты отдельно. Подтвердите знания — только теперь изменится рейтинг.',10);
-   return step('[data-review-open]','Проверка результата','Результат аттестации получен. До подтверждения рейтинг не меняется.',10)
-  }
-  if(a?.status!=='done')return step('.quick-role-waiter',a?'Аттестация назначена':'Задание назначено','Посмотрите обучение со стороны официанта.',a?8:4);
+  if(!state.guideSales)return m?step('#modal .closebtn','Коммерческие показатели','Выручка, план, средний чек и личные продажи. После внедрения можно сравнивать динамику.',2):step('.ra-ops-tile[onclick="raOpsFinance()"]','Управление продажами','Вся выручка и личные продажи — единая точка контроля.',2);
   if(!state.guideManagerCheck){
-   if(m)return step('#modal .closebtn','Контроль исполнения','Видны сотрудник и время выполнения задачи.',11);
-   if(r==='employee-detail')return step('.backline button','Контроль смены','Вернитесь в команду.',11);
-   return step('.ra-ops-tile[onclick="raOpsChecks()"]','Стандарты смены','Проверьте исполнение чек-листа.',11)
+   if(m){
+    const bar=document.querySelector('#modal [data-shift-role="bar"]'),manager=document.querySelector('#modal [data-shift-role="shift_manager"]');
+    if(bar&&!state.guideCheckedBar)return step('#modal [data-shift-role="bar"]','Контроль бара','Управляющий видит выполнение чек-листа каждого подразделения.',3);
+    if(manager&&!state.guideCheckedManager)return step('#modal [data-shift-role="shift_manager"]','Контроль смены','Отдельный чек-лист управляющего — собственные задачи и ответственность.',3);
+    return step('#modal .closebtn','Единый контроль','Готовность подразделений и история выполнения в одном месте. Закройте чек-листы.',3)
+   }
+   if(r==='employee-detail')return step('.backline button','Команда','Вернитесь к обзору команды.',3);
+   return step('.ra-ops-tile[onclick="raOpsChecks()"]','Чек-листы подразделений','Откройте контроль зала, бара и управляющего.',3)
   }
-  if(r!=='employee-detail')return step('.employee-compact[data-employee-id="e1"]','Измеримый результат','Откройте обновлённый рейтинг и историю обучения.',12);
-  return step('.detail-total','Результат','Знания подтверждены управляющим. Влияние на средний чек и выручку отслеживается по фактическим продажам.',12)
+  if(!t){
+   if(r!=='employee-detail')return step('.employee-compact[data-employee-id="e1"]','Рейтинг команды','Общий уровень виден сразу. Откройте сотрудника и найдите раздел, требующий обучения.',4);
+   if(!document.querySelector('[data-demo-salads].open'))return step('[data-demo-salads] .knowledge-row','Диагностика знаний','Откройте раздел «Салаты». Управляющий видит знания по каждому разделу.',5);
+   return step('[data-demo-salads] [data-assign-group]','Назначение теста','Назначьте обучение всему разделу. Официант получит новое задание.',6)
+  }
+  if(t.requestStatus==='requested')return step('[data-request-assign]','Запрос на аттестацию','Официант изучил весь раздел и подтвердил готовность. Назначьте итоговую проверку.',6);
+  if(a?.status==='submitted')return m?step('[data-review-accept]','Подтверждение','Оцените практические навыки и подтвердите аттестацию. Только после этого меняется рейтинг.',6):step('[data-review-open]','Результат получен','Управляющий принимает или отклоняет результат.',6);
+  return step('#roleBtn','Сценарий управляющего завершён','Вы назначили обучение. Вернитесь к выбору роли: теперь вы — официант. Задание останется в его кабинете.',6)
  }
  if(state.auth==='staff'){
-  if(m&&state.studyAssignmentId)return step('#modal .ra-study-actions .primary','Материал для продаж','Изучите состав, вкусные слова и скрипт рекомендации.',p?5:4);
-  if(r==='assigned-test')return state.activeQuiz?.feedbackShown?step('.quiz-card .primary','Обратная связь','Тренировка объясняет ошибки. Рейтинг не меняется.',p?5:4):step('.quiz-options','Проверка знаний','Выберите ответ.',p?5:4);
-  if(r==='assigned-test-result')return step('.quiz-result .primary','Результат тренировки','Вернитесь в кабинет. Для готовности к аттестации нужен результат 100% по разделу.',p?5:4);
-  if(r==='assigned-attestation')return state.activeAttestation?.answers?.[state.activeAttestation.index]!==undefined?step('.attestation-next','Аттестация','Продолжите итоговую проверку.',8):step('.quiz-options','Аттестация','Ответьте без подсказок. Итог проверит управляющий.',8);
-  if(r==='assigned-attestation-result')return step('.attestation-result .primary','Результат отправлен','Рейтинг пока прежний. Управляющий должен принять результат.',8);
-  if(t?.status!=='done')return step('.assigned-test .ra-assignment-actions .ghost','Изучение блюда','Откройте карточку: знания меню становятся навыками продаж.',4);
-  if(!p)return step('[data-prep-start]','Самостоятельное обучение','Официант изучает весь раздел и тренируется до готовности к аттестации.',5);
-  if(p.status!=='done')return p.materialReviewed?step('[data-prep-quiz]','Тренировка раздела','Проверка всех блюд. Повторяйте до 100%.',5):step('.assigned-test .ra-assignment-actions .ghost','Изучение раздела','Продолжите подготовку.',5);
-  if(!p.requestStatus||p.requestStatus==='rejected')return step('[data-prep-request]','Готов к аттестации','Официант сам заявляет о готовности после успешной тренировки.',6);
-  if(p.requestStatus==='requested')return step('.quick-role-manager','Запрос управляющему','Управляющий получит запрос и сможет назначить аттестацию.',7);
-  if(a&&['new','opened'].includes(a.status))return step('.attestation-card .ra-assignment-actions .primary','Итоговая аттестация','Материал уже изучен, повторное чтение не требуется.',8);
-  if(!state.guideHall){if(m)return step('#modal input[data-shift-id]','Стандарт смены','Отметьте выполнение задачи.',9);return step('.ra-ops-tile[onclick="raOpsChecks()"]','Ежедневные стандарты','Откройте чек-лист смены.',9)}
-  if(m)return step('#modal .closebtn','Отметка сохранена','Закройте чек-лист.',9);
-  return step('.quick-role-manager','Возврат к управляющему','Проверьте результаты обучения и исполнения стандартов.',10)
+  if(m&&state.studyAssignmentId)return step('#modal .ra-study-actions .primary','Обучение продажам','Фото, цена, выход, состав, вкусные слова и скрипт. Изучайте меню так, чтобы уверенно рекомендовать гостю.',3);
+  if(r==='assigned-test')return state.activeQuiz?.feedbackShown?step('.quiz-card .primary','Разбор ответа','Система объясняет ответ. Учебный тест не меняет рейтинг.',3):step('.quiz-options','Проверка знаний','Ответьте на вопрос по изученному материалу.',3);
+  if(r==='assigned-test-result')return step('.quiz-result .primary','Результат тренировки','Результат виден управляющему. При 100% можно отправить запрос на аттестацию.',3);
+  if(r==='assigned-attestation')return state.activeAttestation?.answers?.[state.activeAttestation.index]!==undefined?step('.attestation-next','Аттестация','Продолжите итоговую проверку.',3):step('.quiz-options','Аттестация','Ответьте без подсказок. Рейтинг изменится после подтверждения управляющим.',3);
+  if(r==='assigned-attestation-result')return step('.attestation-result .primary','Результат отправлен','Управляющий увидит результат. Ваш рейтинг пока не изменился.',3);
+  if(!state.guideRatingSeen)return step('.scorebox','Мой рейтинг','Личный рейтинг знаний. Он меняется только после принятой аттестации, а не тренировочных тестов.',2);
+  if(a&&['new','opened'].includes(a.status))return step('.attestation-card .ra-assignment-actions .primary','Назначена аттестация','Пройдите проверку уже изученного раздела.',3);
+  if(t&&!state.guideTrainingAttempt&&t.status!=='done')return t.materialReviewed?step('[data-prep-quiz],.assigned-test .ra-assignment-actions .primary','Тест по салатам','Материал изучен. Пройдите тренировочную проверку.',3):step('.assigned-test .ra-assignment-actions .ghost','Новое задание','Тест по разделу «Салаты». Откройте материалы и изучите каждую позицию.',3);
+  if(t?.score===100&&!t.requestStatus)return step('[data-prep-request]','Готов к аттестации','Отправьте управляющему запрос. Он решит, когда проводить итоговую аттестацию.',4);
+  if(!state.guideBarSeen){
+   if(r==='learn'&&state.learnArea==='bar'){
+    if(m)return step('#modal .closebtn','Меню бара','Официант изучает напитки, состав и рекомендации. Закройте карточку.',4);
+    return step('#menuBlock .menu-card','Самостоятельное обучение','Откройте напиток. Любую позицию можно изучать самостоятельно.',4)
+   }
+   if(r==='learn')return step('.head .ghost','Меню','Вернитесь в личный кабинет.',4);
+   return step('.area-card[onclick*="bar"]','Кухня и бар','Официант самостоятельно изучает оба направления меню.',4)
+  }
+  if(r==='learn')return step('.head .ghost','Личный кабинет','Вернитесь в кабинет и посмотрите другие инструменты сотрудника.',4);
+  if(!state.guideMini)return m?step('[data-training-read]','Подготовка к тренингу','Ежедневные материалы помогают отработать навыки рекомендаций и допродаж.',5):step('[data-mini-training]','Мини-тренинги','Откройте подготовку к тренингу по продажам.',5);
+  if(!state.guideHall)return m?step('#modal input[data-shift-id]','Интерактивный чек-лист','Отметьте выполненную задачу. Управляющий сразу увидит сотрудника и время.',6):step('.ra-ops-tile[onclick="raOpsChecks()"]','Рабочая смена','Официант видит только свои задачи смены.',6);
+  if(m&&!state.guideHallClosed)return step('#modal .closebtn','Задача выполнена','Отметка сохранена и видна управляющему.',6);
+  if(!state.guideSchedule)return m?step('#modal .closebtn','График','Демо расписания. При интеграции данные поступают из системы учёта.',7):step('.ra-ops-tile[onclick="raOpsSchedule()"]','Мой график','Официант знает свои смены.',7);
+  if(!state.guidePay)return m?step('#modal .closebtn','Начисления','Оклад, часы и бонусы — пример представления данных учёта. Реальная интеграция не подключена.',8):step('.ra-ops-tile[onclick="raOpsFinance()"]','Мои начисления','Официант понимает, из чего складывается оплата труда.',8);
+  return step('.scorebox','Сценарий официанта завершён','Меню, задания, тренинги, график, начисления и стандарты в одном кабинете. Управляющий видит результаты.',8)
  }
  return null
 }
@@ -76,8 +90,8 @@ const key=s.sel+'|'+s.title;
 if(target!==el){target?.classList.remove('ra-native-target');target=el;el.classList.add('ra-native-target')}
 if(key!==lastKey){lastKey=key;reveal=true}
 if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.body.append(card)}
-const chapter=state.auth==='manager'||state.route==='roles'?'Управляющий':'Официант';
-if(card.dataset.key!==key){card.dataset.key=key;card.innerHTML='<div class="ra-native-meta"><span>'+chapter+' · '+s.n+' / 12</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>'+s.title+'</h3><p>'+s.desc+'</p>'+(s.n===12&&state.route==='employee-detail'?'<button class="primary" data-finish>Завершить</button>':'');card.querySelector('[data-quit]').onclick=finish;card.querySelector('[data-back]').onclick=goBack;const f=card.querySelector('[data-finish]');if(f)f.onclick=finish}
+const chapter=state.auth==='manager'||state.route==='manager-pin'||(state.route==='roles'&&!state.guideManagerDone)?'Управляющий':'Официант';const max=chapter==='Управляющий'?6:8;
+if(card.dataset.key!==key){card.dataset.key=key;card.innerHTML='<div class="ra-native-meta"><span>'+chapter+' · '+s.n+' / '+max+'</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>'+s.title+'</h3><p>'+s.desc+'</p>'+(state.auth==='staff'&&s.n===8&&state.guidePay?'<button class="primary" data-finish>Завершить</button>':state.auth==='staff'&&s.n===2&&!state.guideRatingSeen?'<button class="primary" data-rating-next>Продолжить</button>':'');card.querySelector('[data-quit]').onclick=finish;card.querySelector('[data-back]').onclick=goBack;const f=card.querySelector('[data-finish]');if(f)f.onclick=()=>{state.guideStaffDone=true;finish()};const rn=card.querySelector('[data-rating-next]');if(rn)rn.onclick=()=>{state.guideRatingSeen=true;save();schedule()}}
 if(reveal){reveal=false;const r=el.getBoundingClientRect();if(r.top<70||r.bottom>innerHeight-60){if(!state.studyAssignmentId||!modal())el.scrollIntoView({block:'center',behavior:'auto'})}}
 const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight,g=14,vh=innerHeight,vw=innerWidth;
 let x,y;if(r.right+w+g<vw){x=r.right+g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.left>w+g){x=r.left-w-g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.bottom+h+g<vh&&r.bottom>0){x=Math.min(Math.max(12,r.left),vw-w-12);y=r.bottom+g}else{x=Math.min(Math.max(12,r.left),vw-w-12);y=Math.max(12,Math.min(vh-h-12,r.top-h-g))}
@@ -86,17 +100,27 @@ card.style.left=x+'px';card.style.top=y+'px'
 function schedule(){if(!frame)frame=requestAnimationFrame(place)}
 document.addEventListener('click',e=>{
 if(!guided())return;const s=currentStep();if(!s)return;
-if(s.n===1&&modal()&&e.target.closest('#modal .closebtn'))state.guideSales=true;
-if(s.n===11&&modal()&&e.target.closest('#modal .closebtn'))state.guideManagerCheck=true;
-if(s.n===9&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=e.target.checked;
+const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='manager',staff=state.auth==='staff';
+if(mgr&&s.n===2&&m&&close)state.guideSales=true;
+if(mgr&&s.n===3&&e.target.closest('[data-shift-role="bar"]'))state.guideCheckedBar=true;
+if(mgr&&s.n===3&&e.target.closest('[data-shift-role="shift_manager"]'))state.guideCheckedManager=true;
+if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
+if(mgr&&s.n===6&&e.target.closest('#roleBtn'))state.guideManagerDone=true;
+if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
+if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
+if(staff&&s.n===5&&e.target.closest('[data-training-read]'))state.guideMini=true;
+if(staff&&s.n===6&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=e.target.checked;
+if(staff&&s.n===6&&m&&close&&state.guideHall)state.guideHallClosed=true;
+if(staff&&s.n===7&&m&&close)state.guideSchedule=true;
+if(staff&&s.n===8&&m&&close)state.guidePay=true;
 save();setTimeout(schedule,30)
 },true);
 window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
-const base=render;render=function(){base();if(guided())remember();schedule()};
+const base=render;render=function(){base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
 const reset=window.restartAcademyTour;
-window.restartAcademyTour=async function(){state.compactDemo=true;state.compactVersion=7;views=[];state.shiftChecks={};state.guideSales=false;state.guideHall=false;state.guideManagerCheck=false;lastKey='';await reset();schedule()};
-if(state.compactDemo&&state.compactVersion!==7){state.compactDemo=false;save()}
+window.restartAcademyTour=async function(){state.compactDemo=true;state.compactVersion=8;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
+if(state.compactDemo&&state.compactVersion!==8){state.compactDemo=false;save()}
 render();
 })();
