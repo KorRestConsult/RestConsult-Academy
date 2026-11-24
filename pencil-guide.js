@@ -22,7 +22,7 @@
   const ax=a.left+a.width/2,ay=a.top+a.height/2;
   let sx,sy,ex,ey;
   const dx=x-ax,dy=y-ay;
-  const minLength=vw>=768?155:100;
+  const minLength=vw>=768?115:80;
   const insetX=Math.min(54,b.width*.42),insetY=Math.min(54,b.height*.42);
   if(b.top>=a.bottom||b.bottom<=a.top){
    const down=dy>=0;sx=clamp(x,a.left+14,a.right-14);sy=down?a.bottom+3:a.top-3;
@@ -57,9 +57,16 @@
    }
    vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy);
   }
+  // Confirm the tip belongs to the actual target, not a neighbouring control.
+  const hits=(x,y)=>{const hit=document.elementFromPoint(x,y);return hit&&dest.contains(hit)};
+  if(!hits(ex,ey)){
+   const points=[[x,y],[x,b.top+b.height*.3],[x,b.top+b.height*.7],[b.left+b.width*.3,y],[b.left+b.width*.7,y]].filter(p=>p[0]>5&&p[0]<vw-5&&p[1]>5&&p[1]<vh-5&&hits(...p));
+   if(!points.length){layer.style.visibility='hidden';return}
+   [ex,ey]=points[0];vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy)
+  }
   const ux=vx/Math.max(1,len),uy=vy/Math.max(1,len),nx=-uy,ny=ux;
   const sign=ex>vw*.7?-1:1;
-  const bend=Math.min(38,Math.max(12,len*.17))*sign;
+  const bend=Math.min(26,Math.max(8,len*.12))*sign;
   const mid=[clamp(sx+vx*.48+nx*bend*.78,5,vw-5),clamp(sy+vy*.48+ny*bend*.78,5,vh-5)];
   const c1=[clamp(sx+vx*.12-nx*bend*.19,5,vw-5),clamp(sy+vy*.12-ny*bend*.19,5,vh-5)];
   const c2=[clamp(sx+vx*.31+nx*bend*.58,5,vw-5),clamp(sy+vy*.31+ny*bend*.58,5,vh-5)];
@@ -69,7 +76,7 @@
   const pt=a=>a.map(f).join(' ');
   const d='M '+pt([sx,sy])+' C '+pt(c1)+', '+pt(c2)+', '+pt(mid)+' C '+pt(c3)+', '+pt(c4)+', '+pt([ex,ey]);
   // An asymmetric, lightly hooked finish, like a quick handwritten annotation.
-  const angle=Math.atan2(ey-c4[1],ex-c4[0]),h=vw>=768?23:19;
+  const angle=Math.atan2(ey-c4[1],ex-c4[0]),h=Math.min(vw>=768?23:19,Math.max(9,len*.24));
   const u=[Math.cos(angle),Math.sin(angle)],n=[-u[1],u[0]];
   const left=[ex-u[0]*h+n[0]*h*.55,ey-u[1]*h+n[1]*h*.55];
   const right=[ex-u[0]*h*.68-n[0]*h*.65,ey-u[1]*h*.68-n[1]*h*.65];

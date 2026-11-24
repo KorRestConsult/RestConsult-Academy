@@ -72,3 +72,15 @@ body.ra-guide-pin #raNativeGuide.ra-guide-inline .ra-native-meta button{min-heig
  body.ra-guide-pin .pin-key{width:clamp(44px,calc((var(--ra-visible-height,650px) - 330px)/4.5),64px)!important;height:clamp(44px,calc((var(--ra-visible-height,650px) - 330px)/4.5),64px)!important}
  body.ra-guide-pin #root{padding-top:4px!important;padding-bottom:6px!important}
 }
+
+/* Learning: no overlay, no spotlight, no persistent arrow. The whole page is readable. */
+.ra-learning-note{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:10px 0 16px;padding:12px 15px;border:1px solid #dedfd3;border-left:3px solid #ad935f;border-radius:10px;background:#f3f4ed;color:#284c39}
+.ra-learning-note b{font:500 19px/1.2 Baskerville,Georgia,serif}
+.ra-learning-note p{font:400 13px/1.45 Inter,-apple-system,sans-serif;margin:4px 0 0;color:#59665b}
+.ra-learning-controls{display:flex;gap:4px;flex-shrink:0}
+.ra-learning-controls button{border:0;background:transparent;color:#284c39;font-size:12px;padding:5px 8px;min-height:36px!important}
+body.ra-guide-reading #raNativeSpot,body.ra-guide-reading #raPencilArrow,body.ra-guide-reading #raNativeGuide{display:none!important}
+body.ra-guide-reading #modal{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;scroll-behavior:auto!important}
+body.ra-guide-reading #modal .ra-study-actions{position:static!important;inset:auto!important;background:transparent!important;box-shadow:none!important;padding:16px 0 4px!important}
+body.ra-guide-reading #root{padding-bottom:24px!important}
+@media(max-width:520px){.ra-learning-note{padding:10px;gap:4px}.ra-learning-note b{font-size:17px}.ra-learning-note p{font-size:12px}.ra-learning-controls{flex-direction:column}}
