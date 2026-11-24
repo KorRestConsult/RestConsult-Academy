@@ -1,0 +1,51 @@
+/* KORREST AI: light resort-inspired palette, independent branding. */
+:root{--bg:#f2f7fb;--paper:#fff;--ink:#192f45;--muted:#52677b;--line:#dce7ef;--line-strong:#c8d9e7;--soft:#e5eff7;--dark:#0756a0;--shadow:0 12px 32px rgba(31,78,120,.075);--ra-blue:#0099ff;--ra-deep:#0345bf;--ra-navy:#183c60}
+html,body{background:var(--bg);color:var(--ink)}
+.top{background:#f8fbfe!important;border-bottom-color:var(--line)!important}
+.brand b,.brand small{color:var(--ink)}
+.logo,.ra-intro-mark,.ra-finale-mark{background:linear-gradient(145deg,#0786d9,#0756a0)!important;color:white!important}
+.managerhero,.role-intro{background:linear-gradient(135deg,#e7f4ff,#f8fbfe)!important;border-color:#cde1f1!important;color:var(--ink)}
+.managerhero p,.managerhero .kicker,.role-intro p{color:var(--muted)!important}
+.hero,.employee-detail-head{background:linear-gradient(125deg,#0756a0,#226ba6)!important;color:white!important}
+.hero p,.hero .kicker,.scorebox small,.scorebox span,.employee-detail-head p,.employee-detail-head .kicker{color:#e4f2ff!important}
+.hero:after{background:#ffffff10}
+.scorebox{background:#ffffff13!important;border-color:#ffffff45!important}
+.card,.knowledge-card,.menu-card,.role-card,.employee-compact,.notification-card,.modal{border-color:var(--line)!important}
+.role-card:hover,.tour-launch:hover{border-color:#70b4e8!important}
+.role-no,.role-arrow,.section-title>span{color:#0756a0!important}
+.section-title>span,.tour-launch-icon{background:#e7f3ff!important;border-color:#d2e5f4!important}
+.tour-launch{border-color:#c9dfef!important}
+.app .primary,.ra-intro-shell .primary,.ra-finale-shell .primary,.ra-tour-next,.chip.on{background:#0756a0!important;border-color:#0756a0!important;color:white!important}
+.app .hero .ghost,.app .hero .secondary{background:white!important;color:#0756a0!important;border-color:white!important}
+.ghost,.rolebtn,.quick-role-switch,.korrest-about-trigger{border-color:var(--line)!important;color:var(--ink)!important;background:#fff!important}
+.nav{background:#183c60!important;box-shadow:0 10px 26px #183c6033!important}
+.nav button{color:#d6e6f5!important}
+.nav button.on{background:#fff!important;color:#0756a0!important}
+.track,.ra-rating-track,.quiz-progress{background:#e0ebf4!important}
+.track i,.ra-rating-track i,.quiz-progress i,.official-attestation .quiz-progress i{background:linear-gradient(90deg,#0099ff,#0756a0)!important}
+.scorebox .track{background:#ffffff40!important}
+.scorebox .track i{background:#fff!important}
+.quiz-option{background:#f5faff!important;border-color:#cbddea!important;color:var(--ink)}
+.quiz-option.selected{background:#e0f1ff!important;border-color:#1479c1!important;color:#143e65!important}
+.quiz-option.selected .letter{background:#0756a0!important;color:white!important;border-color:#0756a0!important}
+.quiz-option:focus-visible,.pin-key:focus-visible,.primary:focus-visible{outline:2px solid #0077c8;outline-offset:2px}
+.pin-key{border-color:#cfdfeb!important;box-shadow:0 5px 16px #1a4b7610!important}
+.pin-key:active{background:#e5f2ff!important}
+.pin-key.pin-delete{border-color:transparent!important;box-shadow:none!important}
+.pin-dot.on{background:#0756a0!important}
+.pin-demo{border-color:#cbddea!important;color:#0756a0!important}
+.ra-next-action{outline:3px solid #d83232!important;outline-offset:2px!important;box-shadow:none!important;animation:none!important;border-radius:10px!important;z-index:auto!important}
+.ra-tour-spot{border-color:#e24b42!important}
+.ra-tour-card{border-color:#d4e3ef!important;color:var(--ink)}
+.ra-tour-card p,.ra-tour-count{color:var(--muted)!important}
+.ra-tour-help{color:#0756a0!important;border-color:#cbddea!important}
+.ra-product-intro,.ra-sales-finale{background:rgba(23,54,82,.55)!important}
+.ra-intro-shell,.ra-finale-shell{background:#f3f8fc!important;color:var(--ink)!important;border-color:#e3eff7!important}
+.ra-intro-top,.ra-intro-bottom,.ra-finale-top,.ra-finale-bottom{background:#f8fbfe!important;border-color:var(--line)!important}
+.ra-intro-body{background:radial-gradient(ellipse at 95% 5%,#e1f2ff 0%,transparent 65%)}
+.ra-intro-kicker,.ra-intro-counter,.ra-finale-kicker{color:#0756a0!important}
+.ra-intro-lead,.ra-finale-lead,.ra-intro-brand small,.ra-finale-brand small{color:var(--muted)!important}
+.ra-intro-dots button{background:#c5d9e9!important}
+.ra-intro-dots button.on{background:#0756a0!important}
+#korrestBoot{background:#183c60!important;color:#fff!important}
+.kb-product,.kb-status{color:#c9e5ff!important}
