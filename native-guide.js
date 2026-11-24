@@ -134,7 +134,7 @@ if(reveal){
  }
 }
 const report=modal()&&el.matches('#modal .closebtn'),panel=report?document.getElementById('modal'):null;
-const g=innerWidth>=768?86:60,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
+const g=innerWidth>=768?120:82,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
 let panelRect=panel?.getBoundingClientRect();
 const side=panelRect?Math.max(panelRect.left-g-16,vw-panelRect.right-g-16):0;
 const inline=!!panel&&side<235;

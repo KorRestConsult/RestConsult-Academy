@@ -22,8 +22,8 @@
   const ax=a.left+a.width/2,ay=a.top+a.height/2;
   let sx,sy,ex,ey;
   const dx=x-ax,dy=y-ay;
-  const minLength=vw>=768?100:76;
-  const insetX=Math.min(38,b.width*.4),insetY=Math.min(38,b.height*.4);
+  const minLength=vw>=768?155:100;
+  const insetX=Math.min(54,b.width*.42),insetY=Math.min(54,b.height*.42);
   if(b.top>=a.bottom||b.bottom<=a.top){
    const down=dy>=0;sx=clamp(x,a.left+14,a.right-14);sy=down?a.bottom+3:a.top-3;
    ex=clamp(sx,b.left+Math.min(14,b.width/2),b.right-Math.min(14,b.width/2));ey=down?b.top+insetY:b.bottom-insetY;
@@ -58,12 +58,12 @@
    vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy);
   }
   const ux=vx/Math.max(1,len),uy=vy/Math.max(1,len),nx=-uy,ny=ux;
-  const bend=Math.min(42,Math.max(16,len*.22))*(ex>vw*.7?-1:1);
+  const bend=Math.min(58,Math.max(24,len*.27))*(ex>vw*.7?-1:1);
   const c1=[clamp(sx+vx*.27+nx*bend,5,vw-5),clamp(sy+vy*.27+ny*bend,5,vh-5)];
   const c2=[clamp(sx+vx*.72+nx*bend*.65,5,vw-5),clamp(sy+vy*.72+ny*bend*.65,5,vh-5)];
   const f=n=>Math.round(n*10)/10;
   const d='M '+f(sx)+' '+f(sy)+' C '+c1.map(f).join(' ')+', '+c2.map(f).join(' ')+', '+f(ex)+' '+f(ey);
-  const angle=Math.atan2(ey-c2[1],ex-c2[0]),h=vw>=768?25:21,spread=.55;
+  const angle=Math.atan2(ey-c2[1],ex-c2[0]),h=vw>=768?32:25,spread=.58;
   const left=[ex-h*Math.cos(angle-spread),ey-h*Math.sin(angle-spread)],right=[ex-h*Math.cos(angle+spread),ey-h*Math.sin(angle+spread)];
   const arrow='M '+left.map(f).join(' ')+' Q '+f(ex-h*.24*ux+nx*1.2)+' '+f(ey-h*.24*uy+ny*1.2)+' '+f(ex)+' '+f(ey)+' Q '+f(ex-h*.24*ux-nx*1.5)+' '+f(ey-h*.24*uy-ny*1.5)+' '+right.map(f).join(' ');
   layer.setAttribute('viewBox','0 0 '+vw+' '+vh);
