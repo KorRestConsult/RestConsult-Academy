@@ -4,3 +4,18 @@
 .ra-compact-body{display:flex;align-items:center;justify-content:space-between;gap:12px}.ra-compact-body div{display:grid;gap:3px}.ra-compact-body b{font:500 20px Baskerville,Georgia,serif}.ra-compact-body span{font-size:12px;color:#59665b}.ra-compact-body button{flex-shrink:0;max-width:52%;white-space:normal;line-height:1.3}
 .ra-compact-intro{padding:clamp(30px,8vw,86px)!important;min-height:0!important}.ra-compact-intro h1{font-size:clamp(38px,7vw,76px)!important;line-height:1.04}.ra-intro-categories{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}.ra-intro-categories span{font-size:12px;border:1px solid #c9cdbd;padding:8px 12px;border-radius:20px;color:#284c39}
 @media(max-width:480px){.ra-compact{padding:9px 11px}.ra-compact-body b{font-size:18px}.ra-compact-body span{font-size:11px}.ra-compact-body button{padding:8px 12px;font-size:12px}.ra-compact-intro{padding:30px 20px!important}.ra-intro-actions{width:100%;display:flex;gap:8px}.ra-intro-actions button{white-space:normal}}
+
+/* Guided presentation: a dedicated action panel, not a dashboard banner. */
+body.ra-guided #root{padding-bottom:190px}
+body.ra-guided #nav{display:none!important}
+body.ra-guided .top-actions{visibility:hidden}
+body.ra-guided .managerhero{min-height:0!important;padding:20px 24px!important}
+body.ra-guided .managerhero p{display:none}
+body.ra-guided #raCompact{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));top:auto;right:clamp(12px,3vw,36px);left:auto;width:min(560px,calc(100vw - 24px));z-index:90;padding:18px 20px;margin:0;border:1px solid #a58c5d;border-radius:20px;box-shadow:0 12px 44px #25382d38}
+body.ra-guided #raCompact.ra-in-modal{position:sticky;top:0;bottom:auto;left:auto;right:auto;width:100%;z-index:4;margin:0 0 20px;padding:14px 16px;border-radius:12px;box-shadow:none}
+#raCompact .ra-compact-meta{font-size:12px;letter-spacing:.06em}
+#raCompact .ra-compact-body b{font-size:23px;line-height:1.12}
+#raCompact .ra-compact-body span{font-size:14px;line-height:1.4;color:#25382d}
+#raCompact .ra-demo-next{background:#284c39;color:#fffdf8;border:0;border-radius:12px;padding:12px 18px;min-height:44px;font-weight:650;cursor:pointer}
+#raDemoLaunch{margin:0 0 16px;min-height:44px}
+@media(max-width:520px){body.ra-guided #raCompact{padding:12px 14px}#raCompact .ra-compact-body b{font-size:20px}#raCompact .ra-compact-body span{font-size:12px}#raCompact .ra-demo-next{padding:10px 12px;font-size:12px}}
