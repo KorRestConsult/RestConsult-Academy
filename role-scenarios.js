@@ -45,6 +45,7 @@ roleCards=function(){
 };
 function enterDemoRole(role){
  if(!['Управляющий','Официант'].includes(role))return;
+ if(state.compactDemo&&state.route==='roles'&&role!==(state.guideManagerDone?'Официант':'Управляющий'))return;
  if(role==='Официант'&&!state.employees.some(e=>e.id==='e1'&&e.active!==false)){showToast('Демо-официант недоступен. Начните новую демонстрацию.');return}
  closeModal();state.auth=null;state.role=role;state.currentEmployee='e1';state.demoHandoff=null;
  state.route=role==='Управляющий'?'manager-pin':'staff-pin';
@@ -52,8 +53,8 @@ function enterDemoRole(role){
 }
 openRole=enterDemoRole;
 selectStaff=function(){enterDemoRole('Официант')};
-window.quickSwitchToWaiter=function(){enterDemoRole('Официант')};
-window.quickSwitchToManager=function(){enterDemoRole('Управляющий')};
+window.quickSwitchToWaiter=function(){if(state.compactDemo){if(!state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager)){showToast('Сначала назначьте тест по разделу «Салаты»');return}state.guideManagerDone=true;goRoles();return}enterDemoRole('Официант')};
+window.quickSwitchToManager=function(){if(state.compactDemo){showToast('Завершите демонстрацию официанта или выйдите из сопровождения');return}enterDemoRole('Управляющий')};
 const baseRender=render;
 render=function(){
  if(state.route==='staff-select'){state.role='Официант';state.auth=null;state.currentEmployee='e1';state.route=state.employees.some(e=>e.id==='e1'&&e.active!==false)?'staff-pin':'roles';save()}

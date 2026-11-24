@@ -7,7 +7,7 @@ function currentStep(){
  const id=state.currentEmployee||'e1',t=state.assignedTests.find(x=>x.employeeId===id&&x.workflowPreparation&&x.block==='Салаты'),a=state.assignedTests.find(x=>x.employeeId===id&&x.assignmentType==='attestation'&&x.block==='Салаты'),m=modal(),r=state.route;
  if(r==='roles'){
   if(state.guideManagerDone&&!state.guideStaffDone)return step('.role-card:nth-child(2)','Теперь вы — официант','Задание уже сохранено. Войдите в персональный кабинет и увидите работу системы глазами сотрудника.',1);
-  return step('.role-card:first-child','Выберите роль','Два самостоятельных кабинета. Начните с управляющего или выберите официанта.',1)
+  return step('.role-card:first-child','Начнём с управляющего','Вы — управляющий ресторана. Посмотрите, как контролировать продажи, знания команды и стандарты смены. Откройте кабинет.',1)
  }
  if(r==='manager-pin')return step('.pin-keypad','Доступ управляющего','Введите демонстрационный PIN: 0000. Управление доступно только после входа.',1);
  if(r==='staff-select')return step('.staff-select-card[onclick*="e1"]','Выберите сотрудника','Личный кабинет хранит задания, знания и рабочий график.',1);
@@ -97,9 +97,10 @@ function launch(){window.RASalesIntro?.show();schedule()}
 function place(){
 frame=0;document.body.classList.toggle('ra-native-guided',guided());
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear();return}
-if(!guided()){clear();const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
+if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
 document.getElementById('raDemoLaunch')?.remove();
 const s=currentStep();if(!s){clear();return}
+if(state.route==='roles'){document.querySelectorAll('.role-card').forEach((b,i)=>{const enabled=i===(state.guideManagerDone?1:0);b.disabled=!enabled;b.setAttribute('aria-disabled',String(!enabled))})}
 const el=[...document.querySelectorAll(s.sel)].find(e=>e.getBoundingClientRect().width>0&&!e.disabled);
 if(!el){clear();if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.body.append(card);card.style.left='16px';card.style.top='90px';card.innerHTML='<div class="ra-native-meta"><span>Демонстрация</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>Продолжить</h3><p>Вернитесь к предыдущему экрану, чтобы продолжить обучение.</p>';card.querySelector('[data-back]').onclick=goBack;card.querySelector('[data-quit]').onclick=finish}return}
 const key=s.sel+'|'+s.title;
@@ -154,8 +155,7 @@ if(!pos){
 }
 if(!inline){card.style.left=pos.x+'px';card.style.top=pos.y+'px'}
 if(!spot){spot=document.createElement('div');spot.id='raNativeSpot';spot.setAttribute('aria-hidden','true');document.body.append(spot)}
-const other=roles&&!state.guideManagerDone?document.querySelector('.role-card:nth-child(2)')?.getBoundingClientRect():null;
-const focus=panel?.getBoundingClientRect()||(other?{left:Math.min(r.left,other.left),right:Math.max(r.right,other.right),top:Math.min(r.top,other.top),bottom:Math.max(r.bottom,other.bottom)}:r);
+const focus=panel?.getBoundingClientRect()||r;
 let l=Math.max(4,focus.left-6),t=Math.max(modal()?4:safeTop,focus.top-6),right=Math.min(vw-4,focus.right+6),bottom=Math.min(vh-4,focus.bottom+6);
 for(let p=panel?panel.parentElement:el.parentElement;p&&p!==document.body;p=p.parentElement){
  const c=getComputedStyle(p),v=p.getBoundingClientRect();
@@ -176,7 +176,7 @@ const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='man
 if(mgr&&s.n===2&&m&&close)state.guideSales=true;
 if(mgr&&s.n===3&&e.target.closest('[data-shift-role="bar"]'))state.guideCheckedBar=true;
 if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
-if(mgr&&s.n===6&&e.target.closest('#roleBtn'))state.guideManagerDone=true;
+if(mgr&&e.target.closest('#roleBtn')&&state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager))state.guideManagerDone=true;
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
 if(staff&&rSelfResult(e))state.guideSelfSeen=true;
 if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
