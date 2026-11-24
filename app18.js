@@ -34,7 +34,7 @@
   managerTrainingResults=function(e){
     const rows=completedTestsFor(e.id);
     if(!rows.length)return '<div class="empty">Тренировочных тестов пока нет.</div>';
-    return '<div class="test-results-card">'+rows.slice(0,8).map(t=>'<div class="test-result-row"><div><b>'+esc(t.block)+'</b><small>'+(t.area==='kitchen'?'Кухня':'Бар')+' · '+esc(t.completedAt||'')+' · тренировка</small></div><div class="test-result-score"><b>'+t.correct+' из '+t.total+'</b><small>'+t.score+'%</small></div></div>').join('')+'</div>';
+    return '<div class="test-results-card">'+rows.slice(0,8).map(t=>'<div class="test-result-row"><div><b>'+esc(t.itemName||t.block)+'</b><small>'+(t.area==='kitchen'?'Кухня':'Бар')+' · '+esc(t.completedAt||'')+' · тренировка</small></div><div class="test-result-score"><b>'+t.correct+' из '+t.total+'</b><small>'+t.score+'%</small></div></div>').join('')+'</div>';
   };
 
   // 2) A block attestation requires reviewing EVERY item in that block.
@@ -166,13 +166,13 @@
 
   // 3) Clear employee inbox wording: study -> attestation.
   assignedTestsHTML=function(e){
-    const all=(state.assignedTests||[]).filter(t=>t.employeeId===e.id&&t.status!=='done');
+    const all=(state.assignedTests||[]).filter(t=>t.employeeId===e.id&&['new','opened'].includes(t.status));
     const attrs=all.filter(t=>t.assignmentType==='attestation');
     const tests=all.filter(t=>t.assignmentType!=='attestation');
     let html='';
     function assignedRow(t,isAttestation){
       const s=studyStatus(t);
-      const label=isAttestation?'АТТЕСТАЦИЯ':'ТРЕНИРОВКА';
+      const label=isAttestation?'АТТЕСТАЦИЯ':t.workflowPreparation?'САМОСТОЯТЕЛЬНАЯ ПОДГОТОВКА':'ТРЕНИРОВКА';
       const allRead=s.completed;
       const action=isAttestation?'openAssignedAttestation':'openAssignedTest';
       const title=isAttestation?'Начать аттестацию':'Начать тест';

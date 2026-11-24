@@ -3,8 +3,8 @@
   state.activeAttestation=state.activeAttestation||null;
 
   function isAttestation(t){return t?.assignmentType==='attestation'}
-  function pendingAttestationsFor(id){return (state.assignedTests||[]).filter(t=>t.employeeId===id&&isAttestation(t)&&t.status!=='done')}
-  function sentAttestationExists(employeeId,area,block){return (state.assignedTests||[]).some(t=>t.employeeId===employeeId&&isAttestation(t)&&t.area===area&&t.block===block&&t.status!=='done')}
+  function pendingAttestationsFor(id){return (state.assignedTests||[]).filter(t=>t.employeeId===id&&isAttestation(t)&&['new','opened'].includes(t.status))}
+  function sentAttestationExists(employeeId,area,block){return (state.assignedTests||[]).some(t=>t.employeeId===employeeId&&isAttestation(t)&&t.area===area&&t.block===block&&['new','opened'].includes(t.status))}
   // app18.js renders knowledge rows outside this closure; expose the read-only predicate.
   window.sentAttestationExists=sentAttestationExists;
 
@@ -13,7 +13,7 @@
     const block=decodeURIComponent(encodedBlock),e=emp(employeeId);
     const item=itemId?(STOCK[area]||[]).find(x=>x.id===itemId&&x.block===block):null;
     if(itemId&&!item){showToast('Позиция для проверки не найдена');return}
-    if((state.assignedTests||[]).some(t=>t.employeeId===employeeId&&isAttestation(t)&&t.area===area&&t.block===block&&t.status!=='done')){
+    if((state.assignedTests||[]).some(t=>t.employeeId===employeeId&&isAttestation(t)&&t.area===area&&t.block===block&&['new','opened'].includes(t.status))){
       showToast('По этому разделу уже назначено задание: '+e.name);return;
     }
     const target={area,block,...(item?{itemId:item.id}:{}),assignmentType:'attestation'};
@@ -29,9 +29,9 @@
 
   // Keep training and attestation status independent.
   sentTestExists=function(employeeId,area,block){
-    return (state.assignedTests||[]).some(t=>t.employeeId===employeeId&&!isAttestation(t)&&t.area===area&&t.block===block&&t.status!=='done')
+    return (state.assignedTests||[]).some(t=>t.employeeId===employeeId&&!isAttestation(t)&&t.area===area&&t.block===block&&['new','opened'].includes(t.status))
   };
-  pendingTestsFor=function(id){return (state.assignedTests||[]).filter(t=>t.employeeId===id&&!isAttestation(t)&&t.status!=='done')};
+  pendingTestsFor=function(id){return (state.assignedTests||[]).filter(t=>t.employeeId===id&&!isAttestation(t)&&['new','opened'].includes(t.status))};
   completedTestsFor=function(employeeId){return (state.assignedTests||[]).filter(t=>t.employeeId===employeeId&&!isAttestation(t)&&t.status==='done').sort((a,b)=>String(b.completedAt||'').localeCompare(String(a.completedAt||'')))};
   latestCompletedTest=function(employeeId,area,block){return completedTestsFor(employeeId).find(t=>(!area||t.area===area)&&(!block||t.block===block))||null};
   managerTrainingResults=function(e){const rows=completedTestsFor(e.id);if(!rows.length)return '<div class="empty">Тренировочных тестов пока нет.</div>';return `<div class="test-results-card">${rows.slice(0,8).map(t=>`<div class="test-result-row"><div><b>${esc(t.block)}</b><small>${t.area==='kitchen'?'Кухня':'Бар'} · ${esc(t.completedAt||'')} · тренировочный тест</small></div><div class="test-result-score">${t.correct}/${t.total}</div></div>`).join('')}</div>`};
@@ -80,21 +80,21 @@
     const score=Math.round(correct/a.questionSet.length*100),e=emp(t.employeeId);
     const result={id:'att_result_'+Date.now(),runId:state.demoRunId||null,area:t.area,block:t.itemId?t.itemName:t.block,scope:t.itemId?'item':'block',parentBlock:t.block,itemId:t.itemId||null,score,date:today(),assignmentId:t.id,source:'assigned'};
     e.attestations=Array.isArray(e.attestations)?e.attestations:[];
-    e.attestations.push(result);
-    t.status='done';t.correct=correct;t.total=a.questionSet.length;t.score=score;t.completedAt=`${today()} ${testTime()}`;t.managerSeen=false;
+    t.pendingAttestation=result;
+    t.status='submitted';t.correct=correct;t.total=a.questionSet.length;t.score=score;t.completedAt=`${today()} ${testTime()}`;t.managerSeen=false;
     state.activeAttestation={...a,finished:true,score,correct,total:a.questionSet.length};
     state.route='assigned-attestation-result';save();render();
-    showToast(`Аттестация завершена · новый рейтинг ${rating(e)}%`);
+    showToast('Результат отправлен управляющему на подтверждение');
   }
   function attestationPage(){
     const a=state.activeAttestation,t=(state.assignedTests||[]).find(x=>x.id===a?.assignmentId);if(!a||!t)return staffHome();
     const q=a.questionSet[a.index],selected=a.answers[a.index];
-    return `<section class="quiz-shell official-attestation"><div class="quiz-top"><div><div class="quiz-kicker">${t.itemId?'Проверка конкретного блюда':'Внутренняя аттестация блока'} · ${t.area==='kitchen'?'Кухня':'Бар'}</div><h2>${esc(t.itemName||t.block)}</h2></div><div class="attestation-lock">Результат войдёт в рейтинг</div></div><div class="quiz-progress-label">Вопрос ${a.index+1} из ${a.questionSet.length}</div><div class="quiz-progress"><i style="width:${Math.round(a.index/a.questionSet.length*100)}%"></i></div><div class="quiz-card"><div class="quiz-kicker">Без подсказок до завершения</div><h1>${esc(q.text)}</h1><div class="quiz-options">${q.options.map((o,i)=>`<button class="quiz-option ${selected===i?'selected':''}" onclick="chooseAttestationAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div><div class="quiz-next"><button class="primary attestation-next ${selected===undefined?'waiting':''}" onclick="nextAttestationQuestion()">${a.index===a.questionSet.length-1?'Завершить аттестацию':'Дальше'}</button><small>${selected===undefined?'Выберите вариант выше':'Ответ выбран'}</small></div></div></section>`
+    return `<section class="quiz-shell official-attestation"><div class="quiz-top"><div><div class="quiz-kicker">${t.itemId?'Проверка конкретного блюда':'Внутренняя аттестация блока'} · ${t.area==='kitchen'?'Кухня':'Бар'}</div><h2>${esc(t.itemName||t.block)}</h2></div><div class="attestation-lock">Рейтинг изменится после подтверждения</div></div><div class="quiz-progress-label">Вопрос ${a.index+1} из ${a.questionSet.length}</div><div class="quiz-progress"><i style="width:${Math.round(a.index/a.questionSet.length*100)}%"></i></div><div class="quiz-card"><div class="quiz-kicker">Без подсказок до завершения</div><h1>${esc(q.text)}</h1><div class="quiz-options">${q.options.map((o,i)=>`<button class="quiz-option ${selected===i?'selected':''}" onclick="chooseAttestationAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div><div class="quiz-next"><button class="primary attestation-next ${selected===undefined?'waiting':''}" onclick="nextAttestationQuestion()">${a.index===a.questionSet.length-1?'Завершить аттестацию':'Дальше'}</button><small>${selected===undefined?'Выберите вариант выше':'Ответ выбран'}</small></div></div></section>`
   }
   function attestationResultPage(){
     const a=state.activeAttestation,t=(state.assignedTests||[]).find(x=>x.id===a?.assignmentId),e=t&&emp(t.employeeId);if(!a||!t||!e)return staffHome();
     const blockRating=rating(e,t.area,t.block),areaRating=rating(e,t.area),all=rating(e);
-    return `<section class="quiz-shell"><div class="quiz-card quiz-result attestation-result"><div class="quiz-kicker">${t.itemId?'Проверка блюда завершена':'Аттестация завершена'}</div><div class="result-circle"><strong>${a.score}%</strong><small>${t.itemId?'результат по блюду':'результат аттестации'}</small></div><h1>${esc(t.itemName||t.block)}</h1><p><b>${a.correct} из ${a.total}</b> правильных ответов · ${t.itemId?'проверены знания этого блюда, не всего раздела':'результат внутренней аттестации сохранён'}.</p><div class="rating-after"><div><span>${t.itemId?'Позиция':'Блок'}</span><strong>${t.itemId?a.score:(blockRating||'—')}%</strong></div><div><span>${t.area==='kitchen'?'Кухня':'Бар'}</span><strong>${areaRating}%</strong></div><div><span>Общий рейтинг</span><strong>${all}%</strong></div></div><button class="primary" onclick="state.activeAttestation=null;state.route='home';save();render()">В кабинет</button></div></section>`
+    return `<section class="quiz-shell"><div class="quiz-card quiz-result attestation-result"><div class="quiz-kicker">${t.itemId?'Проверка блюда завершена':'Аттестация завершена'}</div><div class="result-circle"><strong>${a.score}%</strong><small>${t.itemId?'результат по блюду':'результат аттестации'}</small></div><h1>${esc(t.itemName||t.block)}</h1><p><b>${a.correct} из ${a.total}</b> правильных ответов · ${t.itemId?'проверены знания этого блюда, не всего раздела':'результат отправлен управляющему; рейтинг пока не изменился'}.</p><div class="rating-after"><div><span>${t.itemId?'Позиция':'Блок'}</span><strong>${t.itemId?a.score:(blockRating||'—')}%</strong></div><div><span>${t.area==='kitchen'?'Кухня':'Бар'}</span><strong>${areaRating}%</strong></div><div><span>Общий рейтинг</span><strong>${all}%</strong></div></div><button class="primary" onclick="state.activeAttestation=null;state.route='home';save();render()">В кабинет</button></div></section>`
   }
 
   const staffBeforeAttestation=renderStaff;

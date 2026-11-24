@@ -11,3 +11,13 @@ body.ra-native-guided #raTourHelp{display:none}
 #raNativeGuide [data-finish]{margin-top:12px}
 #raDemoLaunch{margin:0 0 16px;min-height:44px}
 @media(max-width:520px){#raNativeGuide{padding:11px 13px}#raNativeGuide h3{font-size:20px}#raNativeGuide p{font-size:12px}}
+.ra-workflow-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #e4e3d9}
+.ra-workflow-row:last-child{border-bottom:0}
+.ra-workflow-row div{display:grid;gap:5px;min-width:0}
+.ra-workflow-row small{display:block;color:#59665b}
+.ra-workflow-row button{flex-shrink:0;max-width:45%;white-space:normal}
+.ra-practical-row{display:grid;grid-template-columns:100px 1fr 32px;gap:12px;align-items:center;padding:12px 0}
+.ra-practical-row input{width:100%;accent-color:#284c39}
+.ra-practical-row output{font-weight:700;text-align:right}
+.ra-practical-note{font-size:13px;color:#59665b}
+.ra-workflow-prep .card{padding:18px}

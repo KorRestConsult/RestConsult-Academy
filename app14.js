@@ -35,7 +35,15 @@
     if(!qs.length) return [];
     const guided=t.presentation===true||(t.presentation!==false&&state.demoRunId&&localStorage.getItem('ra-tour:optout')!=='1');
     let chosen;
-    if(guided){
+    if(!t.itemId&&(t.workflowPreparation||t.assignmentType==='attestation')){
+      const items=(STOCK[t.area]||[]).filter(x=>x.block===t.block);
+      const groups=['composition','taste_words','sales_script','recommendation','service_technique'];
+      chosen=items.map((x,i)=>{
+        const pool=questionsFor(t.area,t.block,x.id);
+        return pool.find(q=>q.skill===groups[(i+(t.workflowPreparation?0:1))%groups.length])||pool[0];
+      });
+      if(!items.length||chosen.some(q=>!q))return [];
+    }else if(guided){
       // Three different practical skills, with reliable order in the presentation.
       const groups=[['composition'],['taste_words'],['recommendation','scenario_choice','sales_script','service_technique']];
       chosen=[];
