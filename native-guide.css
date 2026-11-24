@@ -34,3 +34,7 @@ body.ra-native-guided .ra-native-target{outline:4px solid #bc9a57!important;outl
 #raNativeGuide.ra-guide-inline{position:relative!important;inset:auto!important;width:100%!important;margin:0 0 18px;box-shadow:none;z-index:1}
 #raNativeGuide.ra-guide-inline h3{font-size:21px}
 #raNativeGuide.ra-guide-inline p{font-size:13px}
+
+/* Reserve space below the last row during the guided demonstration. */
+@media(min-width:768px){body.ra-native-guided #root{padding-bottom:180px!important;scroll-padding-bottom:150px!important}}
+body.ra-native-guided .ra-native-target{scroll-margin-block:120px 150px!important}

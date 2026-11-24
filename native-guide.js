@@ -16,13 +16,12 @@ function currentStep(){
   if(!state.guideSales)return m?step('#modal .closebtn','Коммерческие показатели','От выручки ресторана до личного результата каждого официанта. План, средний чек и продажи помогают выявлять точки роста и оценивать эффект обучения.',2):step('.ra-ops-tile[onclick="raOpsFinance()"]','Управление продажами','Управляющий видит выручку ресторана и личные продажи каждого сотрудника: обучение становится инструментом управления коммерческим результатом.',2);
   if(!state.guideManagerCheck){
    if(m){
-    const bar=document.querySelector('#modal [data-shift-role="bar"]'),manager=document.querySelector('#modal [data-shift-role="shift_manager"]');
+    const bar=document.querySelector('#modal [data-shift-role="bar"]');
     if(bar&&!state.guideCheckedBar)return step('#modal [data-shift-role="bar"]','Контроль бара','Управляющий видит выполнение чек-листа каждого подразделения.',3);
-    if(manager&&!state.guideCheckedManager)return step('#modal [data-shift-role="shift_manager"]','Контроль смены','Отдельный чек-лист управляющего — собственные задачи и ответственность.',3);
     return step('#modal .closebtn','Единый контроль','Готовность подразделений и история выполнения в одном месте. Закройте чек-листы.',3)
    }
    if(r==='employee-detail')return step('.backline button','Команда','Вернитесь к обзору команды.',3);
-   return step('.ra-ops-tile[onclick="raOpsChecks()"]','Чек-листы подразделений','Откройте контроль зала, бара и управляющего.',3)
+   return step('.ra-ops-tile[onclick="raOpsChecks()"]','Чек-листы подразделений','Контроль готовности зала и бара: видно, что выполнено, кем и когда.',3)
   }
   if(!t){
    if(r!=='employee-detail')return step('.employee-compact[data-employee-id="e1"]','Рейтинг команды','Общий уровень виден сразу. Откройте сотрудника и найдите раздел, требующий обучения.',4);
@@ -104,14 +103,37 @@ const s=currentStep();if(!s){clear();return}
 const el=[...document.querySelectorAll(s.sel)].find(e=>e.getBoundingClientRect().width>0&&!e.disabled);
 if(!el){clear();if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.body.append(card);card.style.left='16px';card.style.top='90px';card.innerHTML='<div class="ra-native-meta"><span>Демонстрация</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>Продолжить</h3><p>Вернитесь к предыдущему экрану, чтобы продолжить обучение.</p>';card.querySelector('[data-back]').onclick=goBack;card.querySelector('[data-quit]').onclick=finish}return}
 const key=s.sel+'|'+s.title;
-if(target!==el){target?.classList.remove('ra-native-target');target=el;el.classList.add('ra-native-target')}
+if(target!==el){target?.classList.remove('ra-native-target');target=el;el.classList.add('ra-native-target');reveal=true}
 if(key!==lastKey){lastKey=key;reveal=true}
 if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.body.append(card)}
 const chapter=state.auth==='manager'||state.route==='manager-pin'||(state.route==='roles'&&!state.guideManagerDone)?'Управляющий':'Официант';const max=chapter==='Управляющий'?6:8;
 if(card.dataset.key!==key){card.dataset.key=key;card.innerHTML='<div class="ra-native-meta"><span>'+chapter+' · '+s.n+' / '+max+'</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>'+s.title+'</h3><p>'+s.desc+'</p>'+(state.auth==='staff'&&s.n===8&&state.guidePay?'<button class="primary" data-finish>Завершить</button>':state.auth==='staff'&&s.n===2&&!state.guideRatingSeen?'<button class="primary" data-rating-next>Продолжить</button>':'');card.querySelector('[data-quit]').onclick=finish;card.querySelector('[data-back]').onclick=goBack;const f=card.querySelector('[data-finish]');if(f)f.onclick=()=>{state.guideStaffDone=true;finish()};const rn=card.querySelector('[data-rating-next]');if(rn)rn.onclick=()=>{state.guideRatingSeen=true;save();schedule()}}
-if(reveal){reveal=false;const r=el.getBoundingClientRect();if(r.top<70||r.bottom>innerHeight-60){if(!state.studyAssignmentId||!modal())el.scrollIntoView({block:'center',behavior:'auto'})}}
+// Keep the highlighted control inside the actual usable viewport, above the fixed navigation.
+const vv=window.visualViewport;
+const viewportTop=vv?.offsetTop||0;
+const viewportBottom=viewportTop+(vv?.height||innerHeight);
+const nav=document.getElementById('nav'),topbar=document.querySelector('.top');
+const nr=nav?.getBoundingClientRect(),tr=topbar?.getBoundingClientRect();
+const bottomNav=!modal()&&nr&&nr.height>0&&nr.width>nr.height*1.5&&nr.top>viewportTop+(viewportBottom-viewportTop)*.5;
+const safeTop=modal()?viewportTop+14:Math.max(viewportTop+14,(tr?.bottom||0)+12);
+const safeBottom=bottomNav?Math.min(viewportBottom-16,nr.top-16):viewportBottom-16;
+if(reveal){
+ reveal=false;
+ const before=el.getBoundingClientRect();
+ const reading=modal()&&el.closest('.ra-study-actions');
+ if(!reading&&(before.top<safeTop||before.bottom>safeBottom)){
+  el.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});
+  const after=el.getBoundingClientRect();
+  if(!modal()&&after.bottom>safeBottom){
+   const delta=after.top-(safeTop+Math.max(0,(safeBottom-safeTop-after.height)/2));
+   const root=document.getElementById('root');
+   if(root&&root.scrollHeight>root.clientHeight+2&&/auto|scroll/.test(getComputedStyle(root).overflowY))root.scrollTop+=delta;
+   else window.scrollBy({top:delta,behavior:'instant'});
+  }
+ }
+}
 const report=modal()&&el.matches('#modal .closebtn'),panel=report?document.getElementById('modal'):null;
-const g=16,vh=innerHeight,vw=innerWidth;
+const g=16,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
 let panelRect=panel?.getBoundingClientRect();
 const side=panelRect?Math.max(panelRect.left-2*g,vw-panelRect.right-2*g):0;
 const inline=!!panel&&side<235;
@@ -122,19 +144,19 @@ const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const roles=state.route==='roles',choice=roles?document.querySelector('.role-grid')?.getBoundingClientRect():null;
 const bounds=panel?.getBoundingClientRect()||choice||r;
-const cx=clamp(r.left+(r.width-w)/2,12,vw-w-12),cy=clamp(r.top+(r.height-h)/2,12,vh-h-12);
+const cx=clamp(r.left+(r.width-w)/2,12,vw-w-12),cy=clamp(r.top+(r.height-h)/2,safeTop,Math.max(safeTop,vh-h-12));
 const candidates=[{x:cx,y:bounds.bottom+g},{x:cx,y:bounds.top-h-g},{x:bounds.right+g,y:cy},{x:bounds.left-w-g,y:cy}];
-const fits=c=>c.x>=12&&c.y>=12&&c.x+w<=vw-12&&c.y+h<=vh-12;
+const fits=c=>c.x>=12&&c.y>=safeTop&&c.x+w<=vw-12&&c.y+h<=vh-12;
 let pos=candidates.find(fits);
 if(!pos){
  const overlap=c=>Math.max(0,Math.min(c.x+w,bounds.right)-Math.max(c.x,bounds.left))*Math.max(0,Math.min(c.y+h,bounds.bottom)-Math.max(c.y,bounds.top));
- pos=candidates.map(c=>({x:clamp(c.x,12,vw-w-12),y:clamp(c.y,12,vh-h-12)})).sort((a,b)=>overlap(a)-overlap(b))[0]
+ pos=candidates.map(c=>({x:clamp(c.x,12,vw-w-12),y:clamp(c.y,safeTop,Math.max(safeTop,vh-h-12))})).sort((a,b)=>overlap(a)-overlap(b))[0]
 }
 if(!inline){card.style.left=pos.x+'px';card.style.top=pos.y+'px'}
 if(!spot){spot=document.createElement('div');spot.id='raNativeSpot';spot.setAttribute('aria-hidden','true');document.body.append(spot)}
 const other=roles&&!state.guideManagerDone?document.querySelector('.role-card:nth-child(2)')?.getBoundingClientRect():null;
 const focus=panel?.getBoundingClientRect()||(other?{left:Math.min(r.left,other.left),right:Math.max(r.right,other.right),top:Math.min(r.top,other.top),bottom:Math.max(r.bottom,other.bottom)}:r);
-let l=Math.max(4,focus.left-6),t=Math.max(4,focus.top-6),right=Math.min(vw-4,focus.right+6),bottom=Math.min(vh-4,focus.bottom+6);
+let l=Math.max(4,focus.left-6),t=Math.max(modal()?4:safeTop,focus.top-6),right=Math.min(vw-4,focus.right+6),bottom=Math.min(vh-4,focus.bottom+6);
 for(let p=panel?panel.parentElement:el.parentElement;p&&p!==document.body;p=p.parentElement){
  const c=getComputedStyle(p),v=p.getBoundingClientRect();
  if(/auto|scroll|hidden|clip/.test(c.overflowY)){t=Math.max(t,v.top);bottom=Math.min(bottom,v.bottom)}
@@ -152,7 +174,6 @@ if(!guided())return;const s=currentStep();if(!s)return;
 const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='manager',staff=state.auth==='staff';
 if(mgr&&s.n===2&&m&&close)state.guideSales=true;
 if(mgr&&s.n===3&&e.target.closest('[data-shift-role="bar"]'))state.guideCheckedBar=true;
-if(mgr&&s.n===3&&e.target.closest('[data-shift-role="shift_manager"]'))state.guideCheckedManager=true;
 if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
 if(mgr&&s.n===6&&e.target.closest('#roleBtn'))state.guideManagerDone=true;
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
@@ -165,7 +186,7 @@ if(staff&&s.n===7&&m&&close)state.guideSchedule=true;
 if(staff&&s.n===8&&m&&close)state.guidePay=true;
 save();setTimeout(schedule,30)
 },true);
-window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);
+window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
 const base=render;render=function(){base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};

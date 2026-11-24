@@ -1,6 +1,6 @@
 (function(){
-const lists=window.RAShiftLists,roles={hall:'Зал',bar:'Бар',shift_manager:'Управляющий'};
-const role=()=>state.auth==='manager'?'shift_manager':current()?.role==='Бармен'?'bar':'hall';
+const lists=window.RAShiftLists,roles={hall:'Зал',bar:'Бар'};
+const role=()=>state.auth==='manager'?'hall':current()?.role==='Бармен'?'bar':'hall';
 const book=()=>{state.shiftChecks ||= {};const d=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow'}).format(new Date());return state.shiftChecks[d] ||= {}};
 const items=k=>lists[k].sections.flatMap((s,i)=>s.items.map((x,j)=>k+'-'+i+'-'+j));
 const count=k=>items(k).filter(id=>book()[id]).length+'/'+items(k).length;
@@ -15,7 +15,7 @@ return '<section class="ra-ops section"><h2>Рабочая смена</h2><div c
 }
 function modal(title,body){openModal('<div class="modal-head"><div><div class="kicker">Рабочая смена · демо</div><h2>'+title+'</h2></div><button class="closebtn" onclick="closeModal()">×</button></div>'+body)}
 const allowed=k=>!!roles[k]&&(state.auth==='manager'||state.auth==='staff'&&role()===k);
-const writable=k=>allowed(k)&&(state.auth!=='manager'||k==='shift_manager');
+const writable=k=>allowed(k)&&state.auth==='staff';
 window.raOpsChecks=function(k=state.auth==='manager'?'hall':role()){
 if(!allowed(k))return;
 let h=state.auth==='manager'?Object.keys(roles).map(r=>'<button class="ghost" data-shift-role="'+r+'">'+roles[r]+' '+count(r)+'</button>').join(' '):'';
