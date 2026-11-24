@@ -7,7 +7,7 @@
  function create(){
   layer=document.createElementNS(NS,'svg');layer.id='raPencilArrow';layer.setAttribute('aria-hidden','true');
   layer.setAttribute('focusable','false');
-  for(let i=0;i<4;i++){const p=document.createElementNS(NS,'path');p.setAttribute('pathLength','1');p.setAttribute('fill','none');p.setAttribute('class',i%2?'ra-pencil-grain':'ra-pencil-ink');p.classList.add(i<2?'ra-pencil-shaft':'ra-pencil-head');layer.append(p);(i<2?lines:head).push(p)}
+  for(let i=0;i<2;i++){const p=document.createElementNS(NS,'path');p.setAttribute('pathLength','1');p.setAttribute('fill','none');p.setAttribute('class','ra-pencil-ink '+(i===0?'ra-pencil-shaft':'ra-pencil-head'));layer.append(p);(i===0?lines:head).push(p)}
   document.body.append(layer)
  }
  function hide(){layer?.remove();layer=null;lines=[];head=[];last='';source=dest=null;token=''}
@@ -58,14 +58,22 @@
    vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy);
   }
   const ux=vx/Math.max(1,len),uy=vy/Math.max(1,len),nx=-uy,ny=ux;
-  const bend=Math.min(58,Math.max(24,len*.27))*(ex>vw*.7?-1:1);
-  const c1=[clamp(sx+vx*.27+nx*bend,5,vw-5),clamp(sy+vy*.27+ny*bend,5,vh-5)];
-  const c2=[clamp(sx+vx*.72+nx*bend*.65,5,vw-5),clamp(sy+vy*.72+ny*bend*.65,5,vh-5)];
+  const sign=ex>vw*.7?-1:1;
+  const bend=Math.min(38,Math.max(12,len*.17))*sign;
+  const mid=[clamp(sx+vx*.48+nx*bend*.78,5,vw-5),clamp(sy+vy*.48+ny*bend*.78,5,vh-5)];
+  const c1=[clamp(sx+vx*.12-nx*bend*.19,5,vw-5),clamp(sy+vy*.12-ny*bend*.19,5,vh-5)];
+  const c2=[clamp(sx+vx*.31+nx*bend*.58,5,vw-5),clamp(sy+vy*.31+ny*bend*.58,5,vh-5)];
+  const c3=[clamp(sx+vx*.69+nx*bend,5,vw-5),clamp(sy+vy*.69+ny*bend,5,vh-5)];
+  const c4=[clamp(sx+vx*.94+nx*bend*.52,5,vw-5),clamp(sy+vy*.94+ny*bend*.52,5,vh-5)];
   const f=n=>Math.round(n*10)/10;
-  const d='M '+f(sx)+' '+f(sy)+' C '+c1.map(f).join(' ')+', '+c2.map(f).join(' ')+', '+f(ex)+' '+f(ey);
-  const angle=Math.atan2(ey-c2[1],ex-c2[0]),h=vw>=768?32:25,spread=.58;
-  const left=[ex-h*Math.cos(angle-spread),ey-h*Math.sin(angle-spread)],right=[ex-h*Math.cos(angle+spread),ey-h*Math.sin(angle+spread)];
-  const arrow='M '+left.map(f).join(' ')+' Q '+f(ex-h*.24*ux+nx*1.2)+' '+f(ey-h*.24*uy+ny*1.2)+' '+f(ex)+' '+f(ey)+' Q '+f(ex-h*.24*ux-nx*1.5)+' '+f(ey-h*.24*uy-ny*1.5)+' '+right.map(f).join(' ');
+  const pt=a=>a.map(f).join(' ');
+  const d='M '+pt([sx,sy])+' C '+pt(c1)+', '+pt(c2)+', '+pt(mid)+' C '+pt(c3)+', '+pt(c4)+', '+pt([ex,ey]);
+  // An asymmetric, lightly hooked finish, like a quick handwritten annotation.
+  const angle=Math.atan2(ey-c4[1],ex-c4[0]),h=vw>=768?23:19;
+  const u=[Math.cos(angle),Math.sin(angle)],n=[-u[1],u[0]];
+  const left=[ex-u[0]*h+n[0]*h*.55,ey-u[1]*h+n[1]*h*.55];
+  const right=[ex-u[0]*h*.68-n[0]*h*.65,ey-u[1]*h*.68-n[1]*h*.65];
+  const arrow='M '+pt(left)+' Q '+pt([ex-u[0]*h*.32+n[0]*h*.15,ey-u[1]*h*.32+n[1]*h*.15])+' '+pt([ex,ey])+' Q '+pt([ex-u[0]*h*.22-n[0]*h*.29,ey-u[1]*h*.22-n[1]*h*.29])+' '+pt(right);
   layer.setAttribute('viewBox','0 0 '+vw+' '+vh);
   lines.forEach(p=>p.setAttribute('d',d));head.forEach(p=>p.setAttribute('d',arrow));
   layer.style.visibility='visible';
