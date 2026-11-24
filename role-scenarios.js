@@ -35,5 +35,30 @@ window.raMiniTraining=function(){
 };
 window.raTrainingRead=function(){if(state.auth!=='staff')return;state.miniTrainingRead ||= {};state.miniTrainingRead[current().id]=today();save();closeModal();render();showToast('Подготовка к тренингу отмечена')};
 const sh=staffHome;staffHome=function(){return sh()+'<section class="section section-lined"><div class="section-title"><span>•</span><div><h2>Подготовка к тренингам</h2><p>Ежедневное развитие навыков сервиса и продаж.</p></div></div><button class="card area-card" data-mini-training onclick="raMiniTraining()"><div class="area-top"><div><span class="badge">'+(state.miniTrainingRead?.[current().id]===today()?'Изучено':'Материал к тренингу')+'</span><h3>Продажи через рекомендации</h3></div><b>→</b></div></button></section>'};
+// Public demonstration has one login per role. The manager retains the full team.
+const rolesHTML=roleCards;
+roleCards=function(){
+ const box=document.createElement('div');box.innerHTML=rolesHTML();
+ box.querySelectorAll('.role-card').forEach((b,i)=>{if(i>1)b.remove()});
+ box.querySelector('.role-grid')?.classList.add('ra-demo-role-grid');
+ return box.innerHTML
+};
+function enterDemoRole(role){
+ if(!['Управляющий','Официант'].includes(role))return;
+ if(role==='Официант'&&!state.employees.some(e=>e.id==='e1'&&e.active!==false)){showToast('Демо-официант недоступен. Начните новую демонстрацию.');return}
+ closeModal();state.auth=null;state.role=role;state.currentEmployee='e1';state.demoHandoff=null;
+ state.route=role==='Управляющий'?'manager-pin':'staff-pin';
+ save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})
+}
+openRole=enterDemoRole;
+selectStaff=function(){enterDemoRole('Официант')};
+window.quickSwitchToWaiter=function(){enterDemoRole('Официант')};
+window.quickSwitchToManager=function(){enterDemoRole('Управляющий')};
+const baseRender=render;
+render=function(){
+ if(state.route==='staff-select'){state.role='Официант';state.auth=null;state.currentEmployee='e1';state.route=state.employees.some(e=>e.id==='e1'&&e.active!==false)?'staff-pin':'roles';save()}
+ if(state.auth==='staff'||state.route==='staff-pin'){state.currentEmployee='e1';state.role='Официант'}
+ baseRender()
+};
 render()
 })();

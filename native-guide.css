@@ -38,3 +38,5 @@ body.ra-native-guided .ra-native-target{outline:4px solid #bc9a57!important;outl
 /* Reserve space below the last row during the guided demonstration. */
 @media(min-width:768px){body.ra-native-guided #root{padding-bottom:180px!important;scroll-padding-bottom:150px!important}}
 body.ra-native-guided .ra-native-target{scroll-margin-block:120px 150px!important}
+
+@media(min-width:768px){.ra-demo-role-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}

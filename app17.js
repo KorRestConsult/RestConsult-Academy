@@ -4,7 +4,7 @@
     return (state.assignedTests||[]).filter(t=>t.employeeId===id&&t.status!=='done');
   }
   function pendingForRole(role){
-    const ids=new Set((state.employees||[]).filter(e=>e.active!==false&&e.role===role).map(e=>e.id));
+    const ids=new Set((state.employees||[]).filter(e=>e.active!==false&&e.role===role&&(role!=='Официант'||e.id==='e1')).map(e=>e.id));
     return (state.assignedTests||[]).filter(t=>ids.has(t.employeeId)&&t.status!=='done');
   }
   function badge(n){return n?'<span class="role-task-badge">'+n+'</span>':''}
