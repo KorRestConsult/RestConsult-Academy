@@ -50,3 +50,26 @@ body.ra-native-guided .ra-native-target{scroll-margin-block:120px 150px!importan
 #raPencilArrow.ra-pencil-draw .ra-pencil-head{animation:raPencilDraw .22s ease-out 1.52s forwards}
 @keyframes raPencilDraw{to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){#raPencilArrow.ra-pencil-draw path{animation:none;stroke-dashoffset:0}}
+
+/* A tour never sends the visitor into unrelated navigation. Keep the layout footprint on phones. */
+body.ra-native-guided #nav{visibility:hidden!important;pointer-events:none!important}
+body.ra-native-guided #root{scroll-behavior:auto!important}
+body.ra-native-guided .pin-screen{min-height:0!important;padding:8px 12px!important;align-items:center!important}
+body.ra-guide-pin .pin-panel{width:min(380px,100%)!important}
+body.ra-guide-pin .pin-panel h1{font-size:clamp(22px,4vh,30px)!important;line-height:1.12!important}
+body.ra-guide-pin .pin-kicker{margin-bottom:4px!important}
+body.ra-guide-pin .pin-sub{margin:4px auto!important;font-size:12px!important}
+body.ra-guide-pin .pin-dots{height:20px!important;margin:6px 0 8px!important}
+body.ra-guide-pin .pin-keypad{width:min(290px,85vw)!important;gap:6px 12px!important}
+body.ra-guide-pin .pin-key{width:clamp(44px,calc((var(--ra-visible-height, 650px) - 230px)/5.3),72px)!important;height:clamp(44px,calc((var(--ra-visible-height, 650px) - 230px)/5.3),72px)!important}
+body.ra-guide-pin .pin-key strong{font-size:25px!important}
+body.ra-guide-pin .pin-back{margin:4px auto!important;min-height:36px!important;padding:4px 12px!important}
+body.ra-guide-pin .pin-demo{margin:2px auto!important;font-size:13px!important}
+body.ra-guide-pin #raNativeGuide.ra-guide-inline{margin:0 0 8px!important;padding:8px 12px!important}
+body.ra-guide-pin #raNativeGuide.ra-guide-inline h3{font-size:19px!important;margin:3px 0!important}
+body.ra-guide-pin #raNativeGuide.ra-guide-inline p{font-size:12px!important;line-height:1.25!important}
+body.ra-guide-pin #raNativeGuide.ra-guide-inline .ra-native-meta button{min-height:28px!important}
+@media(max-width:767px){
+ body.ra-guide-pin .pin-key{width:clamp(44px,calc((var(--ra-visible-height,650px) - 330px)/4.5),64px)!important;height:clamp(44px,calc((var(--ra-visible-height,650px) - 330px)/4.5),64px)!important}
+ body.ra-guide-pin #root{padding-top:4px!important;padding-bottom:6px!important}
+}
