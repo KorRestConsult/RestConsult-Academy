@@ -44,11 +44,39 @@ blockHTML=function(area,block){
  if(r){const note=document.createElement('div');note.className='notice';note.textContent='Самостоятельная тренировка раздела: '+r.best+'%';if(p&&!['requested','assigned','accepted'].includes(p.requestStatus)){const btn=document.createElement('button');btn.className='primary';btn.textContent='Готов к аттестации';btn.onclick=null;btn.setAttribute('onclick',"raRequestReview('"+p.id+"');showBlock('"+area+"','"+block.replace(/'/g,"\\'")+"')");note.append(btn)}else if(p?.requestStatus)note.append(' · Запрос: '+({requested:'отправлен',assigned:'аттестация назначена',accepted:'подтверждена',rejected:'на повторную подготовку'}[p.requestStatus]||p.requestStatus));box.prepend(note)}
  return box.innerHTML
 };
+// Return from an individual practice test to the assigned list if it was opened there.
+let resumeAssignment=null;
+window.raAssignedStudyResume=()=>resumeAssignment;
+window.raStudySelfTest=function(id){
+ const x=findMenu(id),t=state.assignedTests.find(t=>t.id===state.studyAssignmentId);
+ if(!x||!t||t.employeeId!==current().id)return;
+ resumeAssignment=t.id;closeModal();state.studyAssignmentId=null;save();
+ startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name))
+};
+const rawReturn=window.raSelfReturn;
+window.raSelfReturn=function(){
+ if(resumeAssignment){const id=resumeAssignment;resumeAssignment=null;state.slowSelfQuiz=null;studyAssignmentMaterial(id);return}
+ rawReturn()
+};
+const rawRequest=window.raSelfRequest;
+window.raSelfRequest=function(){const id=resumeAssignment;rawRequest();if(id&&state.route==='learn'){resumeAssignment=null;studyAssignmentMaterial(id)}};
+const listBlock=blockHTML;
+blockHTML=function(area,block){
+ const box=document.createElement('div');box.innerHTML=listBlock(area,block);
+ const grid=box.querySelector('.menu-grid');if(!grid||state.auth!=='staff')return box.innerHTML;
+ const items=STOCK[area].filter(x=>x.block===block);
+ const list=document.createElement('div');list.className='ra-dish-list';
+ list.innerHTML=items.map(x=>{
+  const record=records()[key(area,block,x.id)];
+  return '<div class="ra-dish-row"><button class="ra-dish-open menu-card" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small>'+(record?'<small>Тест: '+record.best+'%</small>':'')+'</span><span class="ra-dish-chevron">›</span></button><button class="ghost" data-dish-test onclick="startSelfSlowQuiz(\''+area+'\',\''+encodeURIComponent(block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Тест по блюду</button></div>'
+ }).join('');
+ grid.replaceWith(list);return box.innerHTML
+};
 const oldShow=showBlock;
 showBlock=function(area,block){state.selfMenuBlock=block;oldShow(area,block)};
 const oldLearn=learnPage;
 learnPage=function(){return oldLearn().replace('<p>Меню по блокам</p>','<p>База знаний заведения · изучайте блюда и проверяйте себя</p>')};
 const oldRestart=window.restartAcademyTour;
-window.restartAcademyTour=function(){state.selfKnowledge={};state.slowSelfQuiz=null;state.selfMenuBlock=null;return oldRestart.apply(this,arguments)};
+window.restartAcademyTour=function(){resumeAssignment=null;state.selfKnowledge={};state.slowSelfQuiz=null;state.selfMenuBlock=null;return oldRestart.apply(this,arguments)};
 render()
 })();

@@ -89,3 +89,16 @@ body.ra-guide-reading #root{padding-bottom:24px!important}
 .ra-reading-footer .primary{min-height:46px}
 body.ra-guide-reading .ra-reading-footer .primary:disabled{opacity:.45}
 @media(max-width:520px){.ra-reading-footer .primary{width:100%}}
+
+/* Compact menu list, same visual language as the rest of the academy. */
+.ra-dish-list{display:grid;gap:9px;margin:12px 0}
+.ra-dish-row{display:flex;align-items:center;gap:12px;background:#fffdf8;border:1px solid #dedfd3;border-radius:14px;padding:8px 12px}
+.ra-dish-row .ra-dish-open{display:flex!important;align-items:center;flex:1;gap:14px;border:0!important;background:transparent!important;box-shadow:none!important;text-align:left;padding:4px!important;min-width:0;min-height:64px;border-radius:8px!important}
+.ra-dish-open img{width:64px;height:64px;object-fit:cover;border-radius:9px;flex-shrink:0}
+.ra-dish-open b{display:block;color:#25382d;font-size:16px}
+.ra-dish-open small{display:block;color:#59665b;font-size:12px;margin-top:4px}
+.ra-dish-chevron{margin-left:auto;font-size:23px;color:#284c39}
+.ra-dish-row>.ghost{flex-shrink:0;min-height:44px}
+.ra-study-hint{font-size:13px;color:#59665b}
+body.ra-guide-reading #modal .ra-study-actions{flex-wrap:wrap;gap:10px}
+@media(max-width:520px){.ra-dish-row{gap:6px;padding:7px}.ra-dish-open img{width:48px;height:48px}.ra-dish-open b{font-size:14px}.ra-dish-row>.ghost{font-size:11px;max-width:100px;white-space:normal}}

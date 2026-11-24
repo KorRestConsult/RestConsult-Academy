@@ -79,55 +79,31 @@
     openMenu(item.id);
   }
   window.studyAssignmentMaterial=function(id){
-    const t=pendingAssignment(id);if(!t)return;
-    const s=studyStatus(t);
-    if(!s.total){showToast('Нет учебных карточек для блока «'+t.block+'»');return}
-    const next=s.items.find(x=>!reviewFor(t).reviewedIds.includes(x.id))||s.items[0];
-    openStudyCard(t,next);
+    const t=pendingAssignment(id);if(!t||t.employeeId!==current().id)return;
+    if(!studyStatus(t).total){showToast('Нет учебных карточек');return}
+    state.studyAssignmentId=t.id;state.learnArea=t.area;state.route='learn';save();render();
+    (window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'});
   };
-  window.markStudyItemAndNext=function(id){
+  window.raStudyListBack=function(){closeModal();state.studyAssignmentId=null;state.route='home';save();render()};
+  window.raStudyRead=function(id,mark=true){
     const t=pendingAssignment(state.studyAssignmentId);if(!t)return;
-    const s=studyStatus(t);
-    const item=s.items.find(x=>x.id===id);
-    if(!item)return;
-    const progress=reviewFor(t);
-    if(!progress.reviewedIds.includes(id))progress.reviewedIds.push(id);
-    const next=s.items.find(x=>!progress.reviewedIds.includes(x.id));
-    if(next){
-      save();
-      // Keep the menu card in the same modal, without jumping to the test.
-      openMenu(next.id);
-    }else{
-      finishStudyMaterial();
-    }
+    const st=studyStatus(t);if(!st.items.some(x=>x.id===id))return;
+    if(mark&&!reviewFor(t).reviewedIds.includes(id))reviewFor(t).reviewedIds.push(id);
+    t.materialReviewed=studyStatus(t).completed;closeModal();save();render()
   };
+  window.markStudyItemAndNext=function(id){raStudyRead(id,true)};
   window.finishStudyMaterial=function(){
-    const t=pendingAssignment(state.studyAssignmentId);
-    if(!t)return;
-    const s=studyStatus(t);
-    if(!s.completed){
-      showToast('Изучено '+s.done+' из '+s.total+'. Для аттестации нужен весь блок.');
-      const next=s.items.find(x=>!reviewFor(t).reviewedIds.includes(x.id));
-      if(next)openMenu(next.id);
-      return;
-    }
-    t.materialReviewed=true;
-    state.studyAssignmentId=null;
-    closeModal();
-    state.route='home';
-    save();render();
-    if(t.itemId){
-      showToast('Блюдо изучено. Теперь проверим знания именно этой позиции.');
-      (t.assignmentType==='attestation'?window.openAssignedAttestation:window.openAssignedTest)(t.id);
-      return;
-    }
-    showToast('Изучены все '+s.total+' позиций блока. Теперь можно пройти проверку.');
-    setTimeout(()=>{
-      const btn=document.querySelector('.attestation-card .primary,.assigned-test .primary');
-      if(btn)window.RAOnboarding?.highlight('.attestation-card .primary,.assigned-test .primary');
-    },120);
+    const t=pendingAssignment(state.studyAssignmentId);if(!t||!studyStatus(t).completed)return;
+    t.materialReviewed=true;state.studyAssignmentId=null;closeModal();state.route='home';save();render();
+    (t.assignmentType==='attestation'?window.openAssignedAttestation:window.openAssignedTest)(t.id)
   };
-
+  const oldLearn=learnPage;
+  learnPage=function(){
+    const t=pendingAssignment(state.studyAssignmentId);
+    if(!t||t.employeeId!==current().id)return oldLearn();
+    const st=studyStatus(t),seen=reviewFor(t).reviewedIds;
+    return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.itemName||t.block)+'</h2><p>Выберите блюдо, изучите карточку и вернитесь к списку.</p></div><button class="ghost" onclick="raStudyListBack()">← В кабинет</button></div><section class="ra-assigned-menu"><div class="ra-study-progress"><b>Изучено '+st.done+' из '+st.total+'</b><div class="ra-study-progress-track"><i style="width:'+Math.round(st.done/st.total*100)+'%"></i></div></div><div class="ra-dish-list">'+st.items.map(x=>'<div class="ra-dish-row"><button class="ra-dish-open" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+ (seen.includes(x.id)?'Изучено':'Открыть карточку')+'</small></span><span class="ra-dish-chevron">›</span></button><button class="ghost" onclick="raStudySelfTest(\''+x.id+'\')">Тест по блюду</button></div>').join('')+'</div><div class="ra-reading-footer"><button class="primary" data-study-block-test '+(st.completed?'':'disabled')+' onclick="finishStudyMaterial()">'+(t.assignmentType==='attestation'?'Начать аттестацию':t.itemId?'Начать назначенный тест':'Тест по всему разделу')+'</button></div><p class="ra-study-hint">'+(st.completed?'Все позиции изучены. Можно пройти назначенный тест.':'Для назначенного теста отметьте все позиции изученными.')+'</p></section>'
+  };
   const originalOpenMenu=openMenu;
   openMenu=function(id){
     const x=findMenu(id);if(!x)return;
@@ -150,11 +126,11 @@
     const studyInfo=inAssignedBlock?
       '<div class="ra-study-progress"><b>'+(t.itemId?'Изучение блюда «'+esc(x.name)+'»':'Изучение блока «'+esc(t.block)+'»')+'</b><span>'+(t.itemId?'Одна позиция · затем проверка по ней':'Блюдо '+(index+1)+' из '+s.total+' · просмотрено '+s.done)+'</span><div class="ra-study-progress-track"><i style="width:'+(s.done/s.total*100)+'%"></i></div></div>':'';
     const description=inAssignedBlock?
-      (t.itemId?'Изучите «'+x.name+'». Затем пройдёте короткую проверку только по этому блюду.':'Последовательно изучите все '+s.total+' позиций блока. Проверка знаний начнётся только после последней карточки.'):
+      (t.itemId?'Изучите «'+x.name+'». Затем пройдёте короткую проверку только по этому блюду.':'Изучите блюдо и вернитесь к списку. Можно проверять знания по каждой позиции отдельно.'):
       'Изучите позицию и проверьте знания тренировочным тестом.';
     const action=inAssignedBlock?
-      '<button class="primary" onclick="markStudyItemAndNext(\''+x.id+'\')">'+(t.itemId?'Изучено → проверить «'+esc(x.name)+'»':index===s.total-1?'Изучено · завершить блок':'Изучено · следующее блюдо →')+'</button>':
-      '<button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тест по блюду</button>';
+      '<button class="ghost" onclick="raStudyRead(\''+x.id+'\',false)">← К списку</button><button class="primary" onclick="raStudyRead(\''+x.id+'\')">Изучено · к списку</button><button class="ghost" onclick="raStudySelfTest(\''+x.id+'\')">Тест по блюду</button>':
+      '<button class="ghost" onclick="closeModal()">← К списку</button><button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тест по блюду</button>';
     openModal('<div class="modal-head"><div><div class="kicker">'+(bar?'Бар':'Кухня')+' · '+esc(x.block)+'</div><h2>'+esc(x.name)+'</h2><p>'+esc(description)+'</p></div><button class="closebtn" onclick="closeModal()">×</button></div>'+
       studyInfo+
       (x.photo?'<div class="detail-photo ra-study-photo"><img src="'+esc(new URL(x.photo,document.baseURI).href)+'" alt="'+esc(x.name)+'" loading="eager"></div>':'')+
