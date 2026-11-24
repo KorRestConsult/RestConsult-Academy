@@ -30,3 +30,7 @@ body.ra-native-guided #raTourHelp{display:none}
 body.ra-native-guided .ra-native-target{outline:4px solid #bc9a57!important;outline-offset:2px!important}
 #raNativeSpot{position:fixed;z-index:11998;pointer-events:none;box-sizing:border-box;border:3px solid #d2ae68;box-shadow:0 0 0 1px #fff9e8,0 0 16px 4px #d2ae6870,0 0 0 200vmax rgba(21,30,24,.44)}
 #raNativeGuide{box-shadow:0 14px 40px #101a1460;border:1px solid #d2ae68}
+
+#raNativeGuide.ra-guide-inline{position:relative!important;inset:auto!important;width:100%!important;margin:0 0 18px;box-shadow:none;z-index:1}
+#raNativeGuide.ra-guide-inline h3{font-size:21px}
+#raNativeGuide.ra-guide-inline p{font-size:13px}

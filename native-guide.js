@@ -110,24 +110,32 @@ if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.
 const chapter=state.auth==='manager'||state.route==='manager-pin'||(state.route==='roles'&&!state.guideManagerDone)?'Управляющий':'Официант';const max=chapter==='Управляющий'?6:8;
 if(card.dataset.key!==key){card.dataset.key=key;card.innerHTML='<div class="ra-native-meta"><span>'+chapter+' · '+s.n+' / '+max+'</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>'+s.title+'</h3><p>'+s.desc+'</p>'+(state.auth==='staff'&&s.n===8&&state.guidePay?'<button class="primary" data-finish>Завершить</button>':state.auth==='staff'&&s.n===2&&!state.guideRatingSeen?'<button class="primary" data-rating-next>Продолжить</button>':'');card.querySelector('[data-quit]').onclick=finish;card.querySelector('[data-back]').onclick=goBack;const f=card.querySelector('[data-finish]');if(f)f.onclick=()=>{state.guideStaffDone=true;finish()};const rn=card.querySelector('[data-rating-next]');if(rn)rn.onclick=()=>{state.guideRatingSeen=true;save();schedule()}}
 if(reveal){reveal=false;const r=el.getBoundingClientRect();if(r.top<70||r.bottom>innerHeight-60){if(!state.studyAssignmentId||!modal())el.scrollIntoView({block:'center',behavior:'auto'})}}
-const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight,g=20,vh=innerHeight,vw=innerWidth;
+const report=modal()&&el.matches('#modal .closebtn'),panel=report?document.getElementById('modal'):null;
+const g=16,vh=innerHeight,vw=innerWidth;
+let panelRect=panel?.getBoundingClientRect();
+const side=panelRect?Math.max(panelRect.left-2*g,vw-panelRect.right-2*g):0;
+const inline=!!panel&&side<235;
+card.classList.toggle('ra-guide-inline',inline);
+if(inline){if(card.parentElement!==panel)panel.prepend(card);card.style.width='';card.style.left='';card.style.top=''}
+else{if(card.parentElement!==document.body)document.body.append(card);card.style.width=panelRect?Math.min(330,side)+'px':''}
+const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const roles=state.route==='roles',choice=roles?document.querySelector('.role-grid')?.getBoundingClientRect():null;
-const bounds=choice||r;
+const bounds=panel?.getBoundingClientRect()||choice||r;
 const cx=clamp(r.left+(r.width-w)/2,12,vw-w-12),cy=clamp(r.top+(r.height-h)/2,12,vh-h-12);
-const candidates=[{x:cx,y:bounds.bottom+g},{x:cx,y:bounds.top-h-g},{x:r.right+g,y:cy},{x:r.left-w-g,y:cy}];
+const candidates=[{x:cx,y:bounds.bottom+g},{x:cx,y:bounds.top-h-g},{x:bounds.right+g,y:cy},{x:bounds.left-w-g,y:cy}];
 const fits=c=>c.x>=12&&c.y>=12&&c.x+w<=vw-12&&c.y+h<=vh-12;
 let pos=candidates.find(fits);
 if(!pos){
  const overlap=c=>Math.max(0,Math.min(c.x+w,bounds.right)-Math.max(c.x,bounds.left))*Math.max(0,Math.min(c.y+h,bounds.bottom)-Math.max(c.y,bounds.top));
  pos=candidates.map(c=>({x:clamp(c.x,12,vw-w-12),y:clamp(c.y,12,vh-h-12)})).sort((a,b)=>overlap(a)-overlap(b))[0]
 }
-card.style.left=pos.x+'px';card.style.top=pos.y+'px';
+if(!inline){card.style.left=pos.x+'px';card.style.top=pos.y+'px'}
 if(!spot){spot=document.createElement('div');spot.id='raNativeSpot';spot.setAttribute('aria-hidden','true');document.body.append(spot)}
 const other=roles&&!state.guideManagerDone?document.querySelector('.role-card:nth-child(2)')?.getBoundingClientRect():null;
-const focus=other?{left:Math.min(r.left,other.left),right:Math.max(r.right,other.right),top:Math.min(r.top,other.top),bottom:Math.max(r.bottom,other.bottom)}:r;
+const focus=panel?.getBoundingClientRect()||(other?{left:Math.min(r.left,other.left),right:Math.max(r.right,other.right),top:Math.min(r.top,other.top),bottom:Math.max(r.bottom,other.bottom)}:r);
 let l=Math.max(4,focus.left-6),t=Math.max(4,focus.top-6),right=Math.min(vw-4,focus.right+6),bottom=Math.min(vh-4,focus.bottom+6);
-for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+for(let p=panel?panel.parentElement:el.parentElement;p&&p!==document.body;p=p.parentElement){
  const c=getComputedStyle(p),v=p.getBoundingClientRect();
  if(/auto|scroll|hidden|clip/.test(c.overflowY)){t=Math.max(t,v.top);bottom=Math.min(bottom,v.bottom)}
  if(/auto|scroll|hidden|clip/.test(c.overflowX)){l=Math.max(l,v.left);right=Math.min(right,v.right)}
