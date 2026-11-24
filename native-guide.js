@@ -76,7 +76,7 @@ function currentStep(){
  }
  return null
 }
-let target=null,card=null,frame=0,lastKey='',reveal=false;
+let target=null,card=null,spot=null,frame=0,lastKey='',reveal=false;
 let views=[],restoring=false;
 const view=()=>({route:state.route,auth:state.auth,role:state.role,currentEmployee:state.currentEmployee,learnArea:state.learnArea,expandedKnowledgeKey:state.expandedKnowledgeKey});
 const viewKey=v=>[v.route,v.auth,v.role,v.currentEmployee].join('|');
@@ -92,11 +92,12 @@ function goBack(){
  if(!prev){prev={route:'roles',auth:null,role:null,currentEmployee:state.currentEmployee}}
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
-function clear(){target?.classList.remove('ra-native-target');target=null;card?.remove();card=null}
+function clear(){target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
 function finish(){state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.hide();window.restartAcademyTour()}
 function place(){
 frame=0;document.body.classList.toggle('ra-native-guided',guided());
+if(document.getElementById('raProductIntro')?.classList.contains('show')){clear();return}
 if(!guided()){clear();const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
 document.getElementById('raDemoLaunch')?.remove();
 const s=currentStep();if(!s){clear();return}
@@ -109,9 +110,32 @@ if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.
 const chapter=state.auth==='manager'||state.route==='manager-pin'||(state.route==='roles'&&!state.guideManagerDone)?'Управляющий':'Официант';const max=chapter==='Управляющий'?6:8;
 if(card.dataset.key!==key){card.dataset.key=key;card.innerHTML='<div class="ra-native-meta"><span>'+chapter+' · '+s.n+' / '+max+'</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>'+s.title+'</h3><p>'+s.desc+'</p>'+(state.auth==='staff'&&s.n===8&&state.guidePay?'<button class="primary" data-finish>Завершить</button>':state.auth==='staff'&&s.n===2&&!state.guideRatingSeen?'<button class="primary" data-rating-next>Продолжить</button>':'');card.querySelector('[data-quit]').onclick=finish;card.querySelector('[data-back]').onclick=goBack;const f=card.querySelector('[data-finish]');if(f)f.onclick=()=>{state.guideStaffDone=true;finish()};const rn=card.querySelector('[data-rating-next]');if(rn)rn.onclick=()=>{state.guideRatingSeen=true;save();schedule()}}
 if(reveal){reveal=false;const r=el.getBoundingClientRect();if(r.top<70||r.bottom>innerHeight-60){if(!state.studyAssignmentId||!modal())el.scrollIntoView({block:'center',behavior:'auto'})}}
-const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight,g=14,vh=innerHeight,vw=innerWidth;
-let x,y;if(r.right+w+g<vw){x=r.right+g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.left>w+g){x=r.left-w-g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.bottom+h+g<vh&&r.bottom>0){x=Math.min(Math.max(12,r.left),vw-w-12);y=r.bottom+g}else{x=Math.min(Math.max(12,r.left),vw-w-12);y=Math.max(12,Math.min(vh-h-12,r.top-h-g))}
-card.style.left=x+'px';card.style.top=y+'px'
+const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight,g=20,vh=innerHeight,vw=innerWidth;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const roles=state.route==='roles',choice=roles?document.querySelector('.role-grid')?.getBoundingClientRect():null;
+const bounds=choice||r;
+const cx=clamp(r.left+(r.width-w)/2,12,vw-w-12),cy=clamp(r.top+(r.height-h)/2,12,vh-h-12);
+const candidates=[{x:cx,y:bounds.bottom+g},{x:cx,y:bounds.top-h-g},{x:r.right+g,y:cy},{x:r.left-w-g,y:cy}];
+const fits=c=>c.x>=12&&c.y>=12&&c.x+w<=vw-12&&c.y+h<=vh-12;
+let pos=candidates.find(fits);
+if(!pos){
+ const overlap=c=>Math.max(0,Math.min(c.x+w,bounds.right)-Math.max(c.x,bounds.left))*Math.max(0,Math.min(c.y+h,bounds.bottom)-Math.max(c.y,bounds.top));
+ pos=candidates.map(c=>({x:clamp(c.x,12,vw-w-12),y:clamp(c.y,12,vh-h-12)})).sort((a,b)=>overlap(a)-overlap(b))[0]
+}
+card.style.left=pos.x+'px';card.style.top=pos.y+'px';
+if(!spot){spot=document.createElement('div');spot.id='raNativeSpot';spot.setAttribute('aria-hidden','true');document.body.append(spot)}
+const other=roles&&!state.guideManagerDone?document.querySelector('.role-card:nth-child(2)')?.getBoundingClientRect():null;
+const focus=other?{left:Math.min(r.left,other.left),right:Math.max(r.right,other.right),top:Math.min(r.top,other.top),bottom:Math.max(r.bottom,other.bottom)}:r;
+let l=Math.max(4,focus.left-6),t=Math.max(4,focus.top-6),right=Math.min(vw-4,focus.right+6),bottom=Math.min(vh-4,focus.bottom+6);
+for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+ const c=getComputedStyle(p),v=p.getBoundingClientRect();
+ if(/auto|scroll|hidden|clip/.test(c.overflowY)){t=Math.max(t,v.top);bottom=Math.min(bottom,v.bottom)}
+ if(/auto|scroll|hidden|clip/.test(c.overflowX)){l=Math.max(l,v.left);right=Math.min(right,v.right)}
+}
+spot.style.display=right>l&&bottom>t?'block':'none';
+Object.assign(spot.style,{left:l+'px',top:t+'px',width:Math.max(0,right-l)+'px',height:Math.max(0,bottom-t)+'px'});
+spot.style.borderRadius=Math.min(18,Math.max(7,r.height/4))+'px';
+
 }
 function rSelfResult(e){return state.route==='slow-self-quiz'&&state.slowSelfQuiz&&!state.slowSelfQuiz.itemId&&state.slowSelfQuiz.index>=state.slowSelfQuiz.questions.length&&e.target.closest('[data-self-request],[data-self-return]')}
 function schedule(){if(!frame)frame=requestAnimationFrame(place)}
