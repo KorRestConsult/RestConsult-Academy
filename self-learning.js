@@ -76,6 +76,9 @@ const oldShow=showBlock;
 showBlock=function(area,block){state.selfMenuBlock=block;oldShow(area,block)};
 const oldLearn=learnPage;
 learnPage=function(){return oldLearn().replace('<p>Меню по блокам</p>','<p>База знаний заведения · изучайте блюда и проверяйте себя</p>')};
+const renderList=render;
+render=function(){renderList();if(state.auth==='staff'&&state.route==='learn'&&!state.studyAssignmentId&&state.selfMenuBlock&&blocksFor(state.learnArea).includes(state.selfMenuBlock))showBlock(state.learnArea,state.selfMenuBlock)};
+
 const oldRestart=window.restartAcademyTour;
 window.restartAcademyTour=function(){resumeAssignment=null;state.selfKnowledge={};state.slowSelfQuiz=null;state.selfMenuBlock=null;return oldRestart.apply(this,arguments)};
 render()

@@ -84,6 +84,7 @@ const viewKey=v=>[v.route,v.auth,v.role,v.currentEmployee].join('|');
 function remember(){const v=view();if(!restoring&&viewKey(v)!==viewKey(views.at(-1)||{}))views.push(v)}
 function goBack(){
  if(modal()&&state.studyAssignmentId&&document.querySelector('#modal .ra-study-facts')){closeModal();schedule();return}
+ if(modal()&&learningSurface()){document.querySelector('#modal .closebtn')?.click();return}
  if(modal()){const t=state.assignedTests.find(x=>x.id===state.studyAssignmentId);if(t){const img=document.querySelector('#modal .ra-study-actions button');const match=img?.getAttribute('onclick')?.match(/markStudyItemAndNext\('([^']+)'\)/);const items=STOCK[t.area].filter(x=>x.block===t.block&&(!t.itemId||x.id===t.itemId));const i=items.findIndex(x=>x.id===match?.[1]);if(i>0){openMenu(items[i-1].id);return}state.studyAssignmentId=null;closeModal();state.route='home';save();render();return}closeModal();return}
  if(state.route==='slow-self-quiz'){raSelfReturn();return}
  if(state.route==='learn'&&state.studyAssignmentId){raStudyListBack();return}
@@ -120,7 +121,7 @@ function learningSurface(){
  if(modal()){const p=document.getElementById('modal');if(p.querySelector('.ra-ops-row,.ra-check-phase,.ra-study-facts,[data-training-read]'))return p}
  if(state.auth!=='staff')return null;
  if(!modal()&&state.route==='learn'&&state.studyAssignmentId)return document.querySelector('.ra-assigned-menu');
- if(!modal()&&state.route==='learn'&&((state.learnArea==='kitchen'&&!state.guideSelfSeen)||(state.learnArea==='bar'&&!state.guideBarSeen)))return document.getElementById('menuBlock');
+ if(!modal()&&state.route==='learn')return document.getElementById('menuBlock');
  if(['assigned-test','assigned-test-result','assigned-attestation','assigned-attestation-result','slow-self-quiz'].includes(state.route))return document.querySelector('.quiz-shell')||document.querySelector('.official-attestation');
  return null
 }
@@ -129,7 +130,7 @@ function learningNote(surface,s){
  document.body.classList.add('ra-guide-reading');
  const list=surface.matches('.ra-assigned-menu,#menuBlock'),isModal=surface.id==='modal',studying=!!surface.querySelector('.ra-study-facts'),checks=!!surface.querySelector('.ra-check-phase'),report=!!surface.querySelector('.ra-ops-row'),mini=!!surface.querySelector('[data-training-read]'),result=!!surface.querySelector('.quiz-result,.attestation-result');
  const title=list?'Выберите блюдо для изучения':report?s.title:checks?'Контроль стандартов':mini?'Подготовка к тренингу':studying?'Изучите в своём темпе':result?'Результат обучения':'Проверка знаний';
- const text=list?(state.studyAssignmentId?'Откройте любое блюдо, прочитайте карточку и отметьте его изученным. Для закрепления знаний нажмите «Тест по блюду». После изучения всех позиций откроется назначенный тест по разделу.':'Откройте любое блюдо и прочитайте карточку. Вернитесь к списку или нажмите «Тест по блюду». Уверены в знаниях? Пройдите тест по всему разделу.'):report?s.desc:checks?(state.auth==='manager'?'Откройте зал или бар, раскройте нужный раздел. После просмотра продолжите демонстрацию.':'Отметьте выполненную задачу. Можно раскрыть любой раздел чек-листа.'):mini?s.desc:studying?'Изучите состав, вкусные слова и рекомендации. Внизу карточки вернитесь к списку или пройдите тест по этому блюду.':result?s.desc:state.route==='assigned-attestation'?'Ответьте самостоятельно. Рейтинг изменится после принятия результата управляющим.':'Прочитайте вопрос, выберите ответ и изучите объяснение. Тренировка не меняет официальный рейтинг.';
+ const text=list?(state.studyAssignmentId?'Откройте любое блюдо, прочитайте карточку и отметьте его изученным. Для закрепления знаний нажмите «Тест по блюду». После изучения всех позиций откроется назначенный тест по разделу.':'Откройте любое блюдо и прочитайте карточку. Вернитесь к списку или нажмите «Тест по блюду». Уверены в знаниях? Пройдите тест по всему разделу. Когда закончите знакомство с меню, нажмите «Продолжить демонстрацию».'):report?s.desc:checks?(state.auth==='manager'?'Откройте зал или бар, раскройте нужный раздел. После просмотра продолжите демонстрацию.':'Отметьте выполненную задачу. Можно раскрыть любой раздел чек-листа.'):mini?s.desc:studying?'Изучите состав, вкусные слова и рекомендации. Внизу карточки вернитесь к списку или пройдите тест по этому блюду.':result?s.desc:state.route==='assigned-attestation'?'Ответьте самостоятельно. Рейтинг изменится после принятия результата управляющим.':'Прочитайте вопрос, выберите ответ и изучите объяснение. Тренировка не меняет официальный рейтинг.';
  let note=surface.querySelector(':scope > .ra-learning-note');
  if(!note){
   note=document.createElement('aside');note.className='ra-learning-note';
@@ -140,6 +141,17 @@ function learningNote(surface,s){
   note.querySelector('[data-learning-quit]').onclick=finish;
  }
  note.querySelector('b').textContent=title;note.querySelector('p').textContent=text;
+ if(list&&!state.studyAssignmentId){
+  let next=note.querySelector('[data-guide-menu-next]');
+  if(!next){next=document.createElement('button');next.className='primary';next.dataset.guideMenuNext='1';next.textContent='Продолжить демонстрацию →';note.firstElementChild.append(next)}
+  next.onclick=()=>{if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true;state.route='home';state.studyAssignmentId=null;save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})};
+ }
+ if(result&&state.route==='slow-self-quiz'&&!window.raAssignedStudyResume?.()){
+  let next=note.querySelector('[data-guide-quiz-next]');
+  if(!next){next=document.createElement('button');next.className='primary';next.dataset.guideQuizNext='1';next.textContent='Продолжить демонстрацию →';note.firstElementChild.append(next)}
+  next.onclick=()=>{if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true;state.slowSelfQuiz=null;state.route='home';save();render()};
+ }
+
  if(report||checks){
   let footer=surface.querySelector('.ra-reading-footer');
   if(!footer){footer=document.createElement('div');footer.className='ra-reading-footer';footer.innerHTML='<button type="button" class="primary" data-report-continue>Продолжить →</button>';surface.append(footer);footer.querySelector('button').onclick=()=>surface.querySelector('.closebtn')?.click()}
@@ -259,7 +271,7 @@ if(mgr&&s.n===3&&e.target.closest('[data-shift-role="bar"]'))state.guideCheckedB
 if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
 if(mgr&&e.target.closest('#roleBtn')&&state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager))state.guideManagerDone=true;
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
-if(staff&&rSelfResult(e)&&!window.raAssignedStudyResume?.())state.guideSelfSeen=true;
+if(staff&&rSelfResult(e)&&!window.raAssignedStudyResume?.()){if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true}
 if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
 
 if(staff&&s.n===5&&e.target.closest('[data-training-read]'))state.guideMini=true;
