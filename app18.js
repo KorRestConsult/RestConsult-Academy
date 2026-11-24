@@ -64,7 +64,7 @@
     const items=itemsForAssignment(t);
     const progress=reviewFor(t);
     const done=items.filter(x=>progress.reviewedIds.includes(x.id)).length;
-    const completed=items.length>0&&done===items.length;
+    const completed=items.length>0&&(done===items.length||t.preparationVerified===true);
     // Older demo sessions may contain the former one-dish completion flag.
     if(t.materialReviewed&&!completed)t.materialReviewed=false;
     return {items,done,total:items.length,completed};
@@ -137,12 +137,15 @@
     const s=inAssignedBlock?studyStatus(t):null;
     const index=inAssignedBlock?s.items.findIndex(item=>item.id===x.id):-1;
     const facts=[
+      ['Описание',x.desc||'—'],
       ['Цена',x.price||'—'],
       [bar?'Объём':'Вес',x.volume||x.weight||'—'],
       ['Состав',x.ingredients||'—'],
       ['Вкусные слова',x.taste||x.meta||'—'],
       ['Скрипт продаж',x.salesScript||x.desc||'—'],
-      ['Скрипт / сервис',x.salesTechnique||'—']
+      ['Техника продаж / сервис',x.salesTechnique||'—'],
+      ...(x.meta?[['Характеристики',x.meta]]:[]),
+      ...(x.weightReviewNote?[['Примечание к выходу',x.weightReviewNote]]:[])
     ];
     const studyInfo=inAssignedBlock?
       '<div class="ra-study-progress"><b>'+(t.itemId?'Изучение блюда «'+esc(x.name)+'»':'Изучение блока «'+esc(t.block)+'»')+'</b><span>'+(t.itemId?'Одна позиция · затем проверка по ней':'Блюдо '+(index+1)+' из '+s.total+' · просмотрено '+s.done)+'</span><div class="ra-study-progress-track"><i style="width:'+(s.done/s.total*100)+'%"></i></div></div>':'';
@@ -151,11 +154,11 @@
       'Изучите позицию и проверьте знания тренировочным тестом.';
     const action=inAssignedBlock?
       '<button class="primary" onclick="markStudyItemAndNext(\''+x.id+'\')">'+(t.itemId?'Изучено → проверить «'+esc(x.name)+'»':index===s.total-1?'Изучено · завершить блок':'Изучено · следующее блюдо →')+'</button>':
-      '<button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тренировочный тест</button>';
+      '<button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тест по блюду</button>';
     openModal('<div class="modal-head"><div><div class="kicker">'+(bar?'Бар':'Кухня')+' · '+esc(x.block)+'</div><h2>'+esc(x.name)+'</h2><p>'+esc(description)+'</p></div><button class="closebtn" onclick="closeModal()">×</button></div>'+
       studyInfo+
       (x.photo?'<div class="detail-photo ra-study-photo"><img src="'+esc(new URL(x.photo,document.baseURI).href)+'" alt="'+esc(x.name)+'" loading="eager"></div>':'')+
-      '<div class="ra-study-label">МАТЕРИАЛ ДЛЯ ИЗУЧЕНИЯ</div><div class="facts ra-study-facts">'+facts.map(([k,v])=>'<div class="fact '+(['Состав','Вкусные слова','Скрипт продаж','Скрипт / сервис'].includes(k)?'wide':'')+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
+      '<div class="ra-study-label">МАТЕРИАЛ ДЛЯ ИЗУЧЕНИЯ</div><div class="facts ra-study-facts">'+facts.map(([k,v])=>'<div class="fact '+(['Описание','Состав','Вкусные слова','Скрипт продаж','Техника продаж / сервис','Характеристики','Примечание к выходу'].includes(k)?'wide':'')+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
       '<div class="modal-actions ra-study-actions">'+action+'</div>');
     // Each next dish must open at the beginning of its own card.
     const wrap=document.getElementById('modalWrap');

@@ -20,8 +20,9 @@ window.raPrepareBlock=function(area,encoded){
  tasks().push(t);save();render();studyAssignmentMaterial(t.id)
 };
 window.raRequestReview=function(id){
- const p=byId(id);if(state.auth!=='staff'||!p||p.employeeId!==own()||!p.workflowPreparation||p.status!=='done'||p.score!==100||studied(p)<total(p))return;
- if(p.requestStatus==='requested'||p.requestStatus==='assigned')return;
+ const p=byId(id);if(state.auth!=='staff'||!p||p.employeeId!==own()||!p.workflowPreparation||p.status!=='done'||p.score!==100||(!p.selfBlockPassed&&studied(p)<total(p)))return;
+ if(['requested','assigned','accepted'].includes(p.requestStatus))return;
+ if(tasks().some(t=>t.id!==p.id&&t.employeeId===p.employeeId&&t.area===p.area&&t.block===p.block&&['requested','assigned'].includes(t.requestStatus))){showToast('Запрос по этому разделу уже отправлен');return;}
  p.requestStatus='requested';p.requestedAt=today()+' '+testTime();save();render();showToast('Готовность к аттестации отправлена управляющему')
 };
 window.raAssignRequested=function(id){
@@ -31,7 +32,7 @@ window.raAssignRequested=function(id){
  runAttestationPlaceholder(p.employeeId,p.area,encodeURIComponent(p.block));
  const t=officialFor(p);
  if(!t||t===prev)return;
- t.preparationId=p.id;t.materialReviewed=true;
+ t.preparationId=p.id;t.materialReviewed=true;t.preparationVerified=!!p.selfBlockPassed;
  state.assignmentStudyProgress ||= {};state.assignmentStudyProgress[t.id]={reviewedIds:[...(state.assignmentStudyProgress[p.id]?.reviewedIds||[])]};
  p.requestStatus='assigned';save();render()
 };
@@ -49,7 +50,7 @@ window.raResolveReview=function(encoded,accept){
   e.attestations||=[];if(!e.attestations.some(a=>a.assignmentId===t.id))e.attestations.push({...t.pendingAttestation,acceptedAt:today()+' '+testTime(),confirmed:true});
   t.status='done';t.confirmedAt=today()+' '+testTime();t.managerSeen=true;t.practical={service:values[0],sales:values[1],standards:values[2],date:today()};e.practical=t.practical;
   if(p)p.requestStatus='accepted';
- }else{t.status='rejected';t.managerSeen=true;if(p){p.requestStatus='rejected';p.status='new';p.materialReviewed=false;if(state.assignmentStudyProgress)delete state.assignmentStudyProgress[p.id]}}
+ }else{t.status='rejected';t.managerSeen=true;if(p){p.requestStatus='rejected';p.status='new';p.selfBlockPassed=false;p.materialReviewed=false;if(state.assignmentStudyProgress)delete state.assignmentStudyProgress[p.id]}}
  save();closeModal();render();showToast(accept?'Аттестация подтверждена. Рейтинг обновлён.':'Назначена повторная подготовка')
 };
 const oldFinish=finishTrainingTest;

@@ -26,16 +26,32 @@
     else if(block) rows=rows.filter(q=>q.category===block);
     // A named menu block must never receive generic questions from another block.
     // A missing bank is reported by the caller instead of silently mixing topics.
-    return rows.map(normalizeQ);
+    const normalized=rows.map(normalizeQ);
+    // Exact item questions for bar items not covered by the imported scenario bank.
+    // Every answer and distractor comes from the existing menu, never an invented recipe.
+    if(area==='bar'&&itemId){
+      const x=(STOCK.bar||[]).find(v=>v.id===itemId);
+      if(x){
+        const fields=[['ingredients','composition','состав'],['taste','taste_words','вкус'],['price','price_weight','цену'],['volume','price_weight','объём']];
+        for(const [field,skill,title] of fields){
+          const value=String(x[field]||'').trim();if(!value||value==='—')continue;
+          const pool=[...new Set([...(STOCK.bar||[]).filter(v=>v.block===x.block&&v.id!==x.id),...(STOCK.bar||[]).filter(v=>v.id!==x.id)].map(v=>String(v[field]||'').trim()).filter(v=>v&&v!==value&&v!=='—'))].slice(0,3);
+          if(pool.length!==3)continue;
+          const correct=(x.id.length+field.length)%4,options=[...pool];options.splice(correct,0,value);
+          normalized.push({id:'menu_'+x.id+'_'+field,text:'Какие данные о позиции «'+x.name+'» соответствуют меню: '+title+'?',options,correct,explanation:'В карточке «'+x.name+'» указано: '+value+'.',skill});
+        }
+      }
+    }
+    return normalized;
   }
   function sample(arr,n){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,Math.min(n,a.length))}
 
   buildDemoQuestions=function(t){
     let qs=questionsFor(t.area,t.block,t.itemId||null);
-    if(!qs.length) return [];
+    if(!qs.length&&!(!t.itemId&&(t.workflowPreparation||t.assignmentType==='attestation'||t.selfBlock))) return [];
     const guided=t.presentation===true||(t.presentation!==false&&state.demoRunId&&localStorage.getItem('ra-tour:optout')!=='1');
     let chosen;
-    if(!t.itemId&&(t.workflowPreparation||t.assignmentType==='attestation')){
+    if(!t.itemId&&(t.workflowPreparation||t.assignmentType==='attestation'||t.selfBlock)){
       const items=(STOCK[t.area]||[]).filter(x=>x.block===t.block);
       const groups=['composition','taste_words','sales_script','recommendation','service_technique'];
       chosen=items.map((x,i)=>{
@@ -62,7 +78,7 @@
   };
 
   function startSelfSlowQuiz(area,block,itemId,label){
-    const qs=buildDemoQuestions({area,block,itemId});
+    const qs=buildDemoQuestions({area,block,itemId,selfBlock:!itemId,presentation:false});
     if(!qs.length){showToast('Для этого раздела пока нет вопросов');return}
     state.slowSelfQuiz={area,block,itemId,label,questions:qs,index:0,answers:[],score:0,answered:false};
     state.route='slow-self-quiz';save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0});

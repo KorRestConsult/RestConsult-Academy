@@ -2,10 +2,10 @@ body.ra-native-guided .role-card:nth-child(3){display:none!important}
 body.ra-native-guided .managerhero{min-height:0!important;padding:20px 24px!important}
 body.ra-native-guided .managerhero p{display:none}
 body.ra-native-guided #raTourHelp{display:none}
-.ra-native-target{outline:3px solid #b94036!important;outline-offset:4px!important;border-radius:10px!important;scroll-margin:90px}
-#raNativeGuide{position:fixed;z-index:12000;box-sizing:border-box;width:min(330px,calc(100vw - 28px));padding:15px 18px;background:#fffdf8;color:#25382d;border:1px solid #ad935f;border-radius:16px;box-shadow:0 10px 35px #25382d35;font-family:Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif}
-#raNativeGuide .ra-native-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.04em;color:#59665b}
-#raNativeGuide .ra-native-meta button{border:0;background:none;color:#59665b;font-size:12px;padding:5px;cursor:pointer}
+.ra-native-target{outline:3px solid #ad935f!important;outline-offset:4px!important;border-radius:10px!important;scroll-margin:90px}
+#raNativeGuide{position:fixed;z-index:12000;box-sizing:border-box;width:min(330px,calc(100vw - 28px));padding:15px 18px;background:#284c39;color:#fffdf8;border:1px solid #ad935f;border-radius:16px;box-shadow:0 10px 35px #25382d35;font-family:Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+#raNativeGuide .ra-native-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;letter-spacing:.04em;color:#e2d9bf}
+#raNativeGuide .ra-native-meta button{border:0;background:none;color:#fffdf8;font-size:12px;padding:5px;cursor:pointer}
 #raNativeGuide h3{font:500 23px/1.15 Baskerville,Georgia,serif;margin:8px 0 5px}
 #raNativeGuide p{font-size:14px;line-height:1.45;margin:0}
 #raNativeGuide [data-finish]{margin-top:12px}
@@ -21,3 +21,7 @@ body.ra-native-guided #raTourHelp{display:none}
 .ra-practical-row output{font-weight:700;text-align:right}
 .ra-practical-note{font-size:13px;color:#59665b}
 .ra-workflow-prep .card{padding:18px}
+
+#raNativeGuide .primary{background:#fffdf8!important;color:#284c39!important;border-color:#ad935f!important}
+
+#raNativeGuide h3,#raNativeGuide p{color:#fffdf8!important}

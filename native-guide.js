@@ -29,8 +29,8 @@ function currentStep(){
    if(!document.querySelector('[data-demo-salads].open'))return step('[data-demo-salads] .knowledge-row','Диагностика знаний','Откройте раздел «Салаты». Управляющий видит знания по каждому разделу.',5);
    return step('[data-demo-salads] [data-assign-group]','Назначение теста','Назначьте обучение всему разделу. Официант получит новое задание.',6)
   }
-  if(t.requestStatus==='requested')return step('[data-request-assign]','Запрос на аттестацию','Официант изучил весь раздел и подтвердил готовность. Назначьте итоговую проверку.',6);
-  if(a?.status==='submitted')return m?step('[data-review-accept]','Подтверждение','Оцените практические навыки и подтвердите аттестацию. Только после этого меняется рейтинг.',6):step('[data-review-open]','Результат получен','Управляющий принимает или отклоняет результат.',6);
+  if(state.assignedTests.some(x=>x.requestStatus==='requested'))return step('[data-request-assign]','Запрос на аттестацию','Официант изучил весь раздел и подтвердил готовность. Назначьте итоговую проверку.',6);
+  if(state.assignedTests.some(x=>x.assignmentType==='attestation'&&x.status==='submitted'))return m?step('[data-review-accept]','Подтверждение','Оцените практические навыки и подтвердите аттестацию. Только после этого меняется рейтинг.',6):step('[data-review-open]','Результат получен','Управляющий принимает или отклоняет результат.',6);
   return step('#roleBtn','Сценарий управляющего завершён','Вы назначили обучение. Вернитесь к выбору роли: теперь вы — официант. Задание останется в его кабинете.',6)
  }
  if(state.auth==='staff'){
@@ -43,6 +43,21 @@ function currentStep(){
   if(a&&['new','opened'].includes(a.status))return step('.attestation-card .ra-assignment-actions .primary','Назначена аттестация','Пройдите проверку уже изученного раздела.',3);
   if(t&&!state.guideTrainingAttempt&&t.status!=='done')return t.materialReviewed?step('[data-prep-quiz],.assigned-test .ra-assignment-actions .primary','Тест по салатам','Материал изучен. Пройдите тренировочную проверку.',3):step('.assigned-test .ra-assignment-actions .ghost','Новое задание','Тест по разделу «Салаты». Откройте материалы и изучите каждую позицию.',3);
   if(t?.score===100&&!t.requestStatus)return step('[data-prep-request]','Готов к аттестации','Отправьте управляющему запрос. Он решит, когда проводить итоговую аттестацию.',4);
+  if(!state.guideSelfSeen){
+   if(r==='slow-self-quiz'){
+    const q=state.slowSelfQuiz;
+    if(q&&q.index<q.questions.length)return q.answered?step('.quiz-card .primary','Разбор ответа','После каждого ответа видны объяснения. Можно повторить тест сколько угодно раз.',4):step('.quiz-options','Самостоятельная проверка',q.itemId?'Вопросы только по выбранному блюду.':'Вопросы охватывают все блюда раздела.',4);
+    if(q?.itemId)return step('[data-self-block]','От блюда к разделу','Уверены в знаниях? Проверьте весь раздел, не открывая каждую карточку.',4);
+    if(document.querySelector('[data-self-request]'))return step('[data-self-request]','Готов к аттестации','Тренировка на 100% позволяет заявить о готовности управляющему.',4);
+    return step('[data-self-return]','Результат раздела','Вернитесь в базу знаний. При необходимости повторите проверку.',4);
+   }
+   if(r==='learn'&&state.learnArea==='kitchen'){
+    if(m)return step('#modal .ra-study-actions .primary','Вся информация о блюде','Изучите фото, описание, выход, цену, состав, вкусные слова и рекомендации. Затем проверьте именно это блюдо.',4);
+    return step('#menuBlock .menu-card','База знаний заведения','Выберите любое блюдо самостоятельно. Назначение от управляющего для этого не требуется.',4)
+   }
+   if(r==='learn')return step('.head .ghost','Личный кабинет','Вернитесь к базе знаний кухни.',4);
+   return step('.area-card[onclick*="kitchen"]','Свободное обучение','Официант сам выбирает раздел и блюдо, которое хочет изучить.',4)
+  }
   if(!state.guideBarSeen){
    if(r==='learn'&&state.learnArea==='bar'){
     if(m)return step('#modal .closebtn','Меню бара','Официант изучает напитки, состав и рекомендации. Закройте карточку.',4);
@@ -68,6 +83,7 @@ const viewKey=v=>[v.route,v.auth,v.role,v.currentEmployee].join('|');
 function remember(){const v=view();if(!restoring&&viewKey(v)!==viewKey(views.at(-1)||{}))views.push(v)}
 function goBack(){
  if(modal()){const t=state.assignedTests.find(x=>x.id===state.studyAssignmentId);if(t){const img=document.querySelector('#modal .ra-study-actions button');const match=img?.getAttribute('onclick')?.match(/markStudyItemAndNext\('([^']+)'\)/);const items=STOCK[t.area].filter(x=>x.block===t.block&&(!t.itemId||x.id===t.itemId));const i=items.findIndex(x=>x.id===match?.[1]);if(i>0){openMenu(items[i-1].id);return}state.studyAssignmentId=null;closeModal();state.route='home';save();render();return}closeModal();return}
+ if(state.route==='slow-self-quiz'){raSelfReturn();return}
  if(state.route==='assigned-test'&&state.activeQuiz?.index>0){state.activeQuiz.index--;state.activeQuiz.feedbackShown=state.activeQuiz.answers[state.activeQuiz.index]!==undefined;save();render();return}
  if(state.route==='assigned-attestation'&&state.activeAttestation?.index>0){state.activeAttestation.index--;save();render();return}
  if(state.route==='roles'){window.RASalesIntro?.show();return}
@@ -97,6 +113,7 @@ const r=el.getBoundingClientRect(),w=card.offsetWidth,h=card.offsetHeight,g=14,v
 let x,y;if(r.right+w+g<vw){x=r.right+g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.left>w+g){x=r.left-w-g;y=Math.min(Math.max(12,r.top),vh-h-12)}else if(r.bottom+h+g<vh&&r.bottom>0){x=Math.min(Math.max(12,r.left),vw-w-12);y=r.bottom+g}else{x=Math.min(Math.max(12,r.left),vw-w-12);y=Math.max(12,Math.min(vh-h-12,r.top-h-g))}
 card.style.left=x+'px';card.style.top=y+'px'
 }
+function rSelfResult(e){return state.route==='slow-self-quiz'&&state.slowSelfQuiz&&!state.slowSelfQuiz.itemId&&state.slowSelfQuiz.index>=state.slowSelfQuiz.questions.length&&e.target.closest('[data-self-request],[data-self-return]')}
 function schedule(){if(!frame)frame=requestAnimationFrame(place)}
 document.addEventListener('click',e=>{
 if(!guided())return;const s=currentStep();if(!s)return;
@@ -107,6 +124,7 @@ if(mgr&&s.n===3&&e.target.closest('[data-shift-role="shift_manager"]'))state.gui
 if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
 if(mgr&&s.n===6&&e.target.closest('#roleBtn'))state.guideManagerDone=true;
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
+if(staff&&rSelfResult(e))state.guideSelfSeen=true;
 if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
 if(staff&&s.n===5&&e.target.closest('[data-training-read]'))state.guideMini=true;
 if(staff&&s.n===6&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=e.target.checked;
@@ -120,7 +138,7 @@ const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guide
 const base=render;render=function(){base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
 const reset=window.restartAcademyTour;
-window.restartAcademyTour=async function(){state.compactDemo=true;state.compactVersion=8;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
-if(state.compactDemo&&state.compactVersion!==8){state.compactDemo=false;save()}
+window.restartAcademyTour=async function(){state.compactDemo=true;state.compactVersion=9;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideSelfSeen','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
+if(state.compactDemo&&state.compactVersion!==9){state.compactDemo=false;save()}
 render();
 })();
