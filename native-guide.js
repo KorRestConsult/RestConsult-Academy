@@ -93,7 +93,7 @@ function goBack(){
 }
 function clear(){target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
 function finish(){state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
-function launch(){window.RASalesIntro?.hide();window.restartAcademyTour()}
+function launch(){window.RASalesIntro?.show();schedule()}
 function place(){
 frame=0;document.body.classList.toggle('ra-native-guided',guided());
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear();return}
@@ -170,6 +170,7 @@ spot.style.borderRadius=Math.min(18,Math.max(7,r.height/4))+'px';
 function rSelfResult(e){return state.route==='slow-self-quiz'&&state.slowSelfQuiz&&!state.slowSelfQuiz.itemId&&state.slowSelfQuiz.index>=state.slowSelfQuiz.questions.length&&e.target.closest('[data-self-request],[data-self-return]')}
 function schedule(){if(!frame)frame=requestAnimationFrame(place)}
 document.addEventListener('click',e=>{
+if(e.target.closest('.tour-launch')){e.preventDefault();e.stopImmediatePropagation();launch();return}
 if(!guided())return;const s=currentStep();if(!s)return;
 const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='manager',staff=state.auth==='staff';
 if(mgr&&s.n===2&&m&&close)state.guideSales=true;
