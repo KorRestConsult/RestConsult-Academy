@@ -13,11 +13,10 @@
       sent=sentTestExists(e.id,area,b),attSent=sentAttestationExists(e.id,area,b),lastTest=latestCompletedTest(e.id,area,b);
     let desc=n?(n+' '+(n===1?'аттестация':'аттестации')+(r?' · результат внутренней проверки '+r+'%':'')):'Аттестаций пока нет';
     if(lastTest)desc+=' · тренировка '+lastTest.correct+' из '+lastTest.total;
-    const demoDish=area==='kitchen'&&b==='Горячие закуски'&&e.id==='e1'&&(STOCK.kitchen||[]).find(x=>x.id==='kitchen_stripsy');
-    const itemArg=demoDish?",'"+demoDish.id+"'":'';
-    const actionText=demoDish?'Проверить «'+esc(demoDish.name)+'»':'Назначить аттестацию';
-    const extra=demoDish?'<button class="ghost" onclick="runAttestationPlaceholder(\''+e.id+'\',\''+area+'\',\''+enc+'\')">Весь блок (отдельно)</button>':'';
-    return '<div class="knowledge-row-wrap '+(open?'open':'')+'" '+(demoDish?'data-demo-block':'')+'><button class="knowledge-row" onclick="toggleKnowledge(\''+area+'\',\''+enc+'\')"><div class="knowledge-row-main"><b>'+esc(b)+'</b><small>'+esc(desc)+'</small>'+scaleHTML(r,'Уровень блока')+'</div><span class="knowledge-chevron">›</span></button><div class="knowledge-expand"><div class="knowledge-expand-inner"><div class="knowledge-actions"><button class="ghost '+(sent?'sent':'')+'" onclick="sendTest(\''+e.id+'\',\''+area+'\',\''+enc+'\')">'+(sent?'Тест отправлен':'Отправить тест')+'</button><button class="primary '+(attSent?'sent':'')+'" onclick="runAttestationPlaceholder(\''+e.id+'\',\''+area+'\',\''+enc+'\''+itemArg+')">'+(attSent?'Задание назначено':actionText)+'</button>'+extra+'</div></div></div></div>';
+    const demoDish=area==='kitchen'&&b==='Горячие закуски'&&e.id==='e1';
+    const actionText='Аттестация блока';
+    const extra='';
+    return '<div class="knowledge-row-wrap '+(open?'open':'')+'" '+(demoDish?'data-demo-block':'')+'><button class="knowledge-row" onclick="toggleKnowledge(\''+area+'\',\''+enc+'\')"><div class="knowledge-row-main"><b>'+esc(b)+'</b><small>'+esc(desc)+'</small>'+scaleHTML(r,'Уровень блока')+'</div><span class="knowledge-chevron">›</span></button><div class="knowledge-expand"><div class="knowledge-expand-inner"><div class="knowledge-actions"><button class="ghost '+(sent?'sent':'')+'" onclick="raChooseDish(\''+e.id+'\',\''+area+'\',\''+enc+'\')">'+'Тест по блюду'+'</button><button class="primary '+(attSent?'sent':'')+'" onclick="runAttestationPlaceholder(\''+e.id+'\',\''+area+'\',\'' +enc+'\''+')">'+(attSent?'Задание назначено':actionText)+'</button>'+extra+'</div></div></div></div>';
   }).join('')};
 
   employeeDetailPage=function(){
@@ -119,7 +118,7 @@
     save();render();
     if(t.itemId){
       showToast('Блюдо изучено. Теперь проверим знания именно этой позиции.');
-      window.openAssignedAttestation(t.id);
+      (t.assignmentType==='attestation'?window.openAssignedAttestation:window.openAssignedTest)(t.id);
       return;
     }
     showToast('Изучены все '+s.total+' позиций блока. Теперь можно пройти аттестацию.');
@@ -141,8 +140,8 @@
       ['Цена',x.price||'—'],
       [bar?'Объём':'Вес',x.volume||x.weight||'—'],
       ['Состав',x.ingredients||'—'],
-      ['Вкус и ощущения',x.taste||x.meta||'—'],
-      ['Как продавать',x.salesScript||x.desc||'—'],
+      ['Вкусные слова',x.taste||x.meta||'—'],
+      ['Скрипт продаж',x.salesScript||x.desc||'—'],
       ['Скрипт / сервис',x.salesTechnique||'—']
     ];
     const studyInfo=inAssignedBlock?
@@ -156,7 +155,7 @@
     openModal('<div class="modal-head"><div><div class="kicker">'+(bar?'Бар':'Кухня')+' · '+esc(x.block)+'</div><h2>'+esc(x.name)+'</h2><p>'+esc(description)+'</p></div><button class="closebtn" onclick="closeModal()">×</button></div>'+
       studyInfo+
       (x.photo?'<div class="detail-photo ra-study-photo"><img src="'+esc(x.photo)+'" alt="'+esc(x.name)+'" loading="eager"></div>':'')+
-      '<div class="ra-study-label">МАТЕРИАЛ ДЛЯ ИЗУЧЕНИЯ</div><div class="facts ra-study-facts">'+facts.map(([k,v])=>'<div class="fact '+(['Состав','Вкус и ощущения','Как продавать','Скрипт / сервис'].includes(k)?'wide':'')+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
+      '<div class="ra-study-label">МАТЕРИАЛ ДЛЯ ИЗУЧЕНИЯ</div><div class="facts ra-study-facts">'+facts.map(([k,v])=>'<div class="fact '+(['Состав','Вкусные слова','Скрипт продаж','Скрипт / сервис'].includes(k)?'wide':'')+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
       '<div class="modal-actions ra-study-actions">'+action+'</div>');
     // Each next dish must open at the beginning of its own card.
     const wrap=document.getElementById('modalWrap');

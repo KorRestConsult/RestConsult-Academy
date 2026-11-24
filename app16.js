@@ -45,8 +45,8 @@
       {sel:'.pin-keypad',title:'Войдите как сотрудник',action:true}
     ],
     'handoff-staff-home':[
-      {sel:'.attestation-inbox, .notification-card',title:'Вот назначенная аттестация'},
-      {sel:'.attestation-inbox .ra-assignment-actions .ghost',title:'Изучите «Стрипсы»',action:true}
+      {sel:'.attestation-inbox, .assigned-tests, .notification-card',title:'Новое задание'},
+      {sel:'.ra-assignment-actions .ghost',title:'Изучите назначенный материал',action:true}
     ],
     'roles':[
       {sel:'.role-intro',title:'Демонстрация сервиса'},
@@ -75,13 +75,13 @@
       {sel:'.knowledge-row-wrap[data-demo-block] > .knowledge-row',title:'Откройте блок «Горячие закуски»',action:true}
     ],
     'employee-actions':[
-      {sel:'.knowledge-row-wrap.open .knowledge-actions .ghost',title:'Тренировка · без изменения рейтинга'},
-      {sel:'.knowledge-row-wrap.open .knowledge-actions .primary',title:'Назначьте проверку «Стрипсы»',action:true}
+      {sel:'.knowledge-row-wrap.open .knowledge-actions .ghost',title:'Тест по блюду · без изменения рейтинга'},
+      {sel:'.knowledge-row-wrap.open .knowledge-actions .primary',title:'Назначьте аттестацию блока',action:true}
     ],
     'staff-home':[
       {sel:'.hero',title:'Личный кабинет'},
       {sel:'.scorebox',title:'Мой рейтинг'},
-      {sel:'.attestation-inbox, .notification-card',title:'Задания от управляющего'},
+      {sel:'.attestation-inbox, .assigned-tests, .notification-card',title:'Задания от управляющего'},
       {sel:'.area-card:first-child',title:'Изучение меню'},
       {sel:'#nav',title:'Навигация'}
     ],
@@ -98,7 +98,7 @@
       {sel:'#menuBlock .ghost, .head .ghost',title:'Проверить знания'}
     ],
     'assigned-test':[
-      {sel:'.quiz-top',title:'Тренировка · без изменения рейтинга'},
+      {sel:'.quiz-top',title:'Тест по блюду · без изменения рейтинга'},
       {sel:'.quiz-progress',title:'Прогресс'},
       {sel:'.quiz-options',title:'Ответ и обучение'}
     ],
@@ -261,7 +261,7 @@
     const el=document.querySelector(step.sel);
     if(el?.contains(e.target))finish(el.matches('.pin-keypad')?'done':'action');
   },true);
-  function start(key,force=false){
+  function start(key,force=false){if(state.compactDemo)return;
     ensureUI();if(!key||key!==screenKey()||active===key)return;
     const steps=availableSteps(key);if(!steps.length)return;
     const seen=seenMap();if(!force&&seen[key])return;
@@ -308,7 +308,7 @@
       if(active===key){index=Math.max(0,availableSteps(key).length-1);place()}
     },80);
   }
-  function maybe(){if(active||isOptedOut())return;const key=screenKey();if(!key)return;setTimeout(()=>{if(!active&&!isOptedOut()&&screenKey()===key)start(key,false)},260)}
+  function maybe(){if(state.compactDemo)return;if(active||isOptedOut())return;const key=screenKey();if(!key)return;setTimeout(()=>{if(!active&&!isOptedOut()&&screenKey()===key)start(key,false)},260)}
 
   window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(place,80)});
   window.addEventListener('scroll',()=>{if(active&&!placing){clearTimeout(resizeTimer);resizeTimer=setTimeout(place,90)}},{passive:true});

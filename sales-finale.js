@@ -161,7 +161,7 @@
       if(shouldFinish){
         state.demoHandoff={employeeId:id,stage:'finale'};
         try{save()}catch(e){}
-        setTimeout(show,260);
+        /* Let the buyer inspect the actual updated rating before any summary. */
       }
       return out;
     };
@@ -171,7 +171,7 @@
     if(state?.demoHandoff?.stage==='manager-result'&&state?.auth==='manager'&&state?.route==='employee-detail'){
       state.demoHandoff.stage='finale';
       try{save()}catch(e){}
-      setTimeout(show,260);
+      /* No automatic interruption. */
     }
   }
 

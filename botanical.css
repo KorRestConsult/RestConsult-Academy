@@ -58,3 +58,5 @@ h1,h2,.role-card h3,.kb-brand{font-family:Baskerville,Georgia,serif!important;fo
 .ra-ops-tile{display:flex;flex-direction:column;gap:6px;text-align:left;background:#fffdf8;border:1px solid #d8ddcf;border-radius:16px;padding:14px;color:#25382d;font:inherit}
 .ra-ops-tile strong{font:500 26px Baskerville,Georgia,serif}.ra-ops-tile small{color:#59665b;font-size:12px}
 .ra-check-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-top:1px solid #dddccf}.ra-check-item input{width:20px;height:20px;accent-color:#284c39;flex:none}.ra-check-item small{display:block;color:#59665b}.ra-check-phase{margin:16px 0}.ra-check-phase summary{font-weight:700;padding:10px 0}.ra-ops-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #dddccf;padding:12px 0}
+
+.ra-dish-choice{display:block;width:100%;margin:8px 0;padding:14px;text-align:left}

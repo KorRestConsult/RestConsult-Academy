@@ -71,7 +71,7 @@ function trainingTestPage(){
 }
 function trainingTestResultPage(){
   const q=state.activeQuiz,t=q&&state.assignedTests.find(x=>x.id===q.testId);if(!t){state.route='home';save();return staffHome()}
-  return `<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Тест завершён · ${t.area==='kitchen'?'Кухня':'Бар'}</div><div class="result-circle"><strong>${t.correct}/${t.total}</strong></div><h1>${esc(t.block)}</h1><p>${t.score}% правильных ответов. Это тренировочный тест — общий рейтинг сотрудника не изменился.</p><div class="split-actions" style="justify-content:center"><button class="primary" onclick="state.activeQuiz=null;state.route='home';save();render()">Вернуться в кабинет</button></div></div></section>`
+  return `<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Тест завершён · ${t.area==='kitchen'?'Кухня':'Бар'}</div><div class="result-circle"><strong>${t.correct}/${t.total}</strong></div><h1>${esc(t.itemName||t.block)}</h1><p>${t.score}% правильных ответов. Это тренировочный тест — общий рейтинг сотрудника не изменился.</p><div class="split-actions" style="justify-content:center"><button class="primary" onclick="state.activeQuiz=null;state.route='home';save();render()">Вернуться в кабинет</button></div></div></section>`
 }
 
 function assignedTestsHTML(e){
