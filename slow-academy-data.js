@@ -7456,7 +7456,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_14",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Currant Candy",
         "price": "450 ₽",
         "volume": "",
@@ -7469,7 +7469,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_15",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Cherry Halls",
         "price": "450 ₽",
         "volume": "",
@@ -7482,7 +7482,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_16",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Mango Cheesecake",
         "price": "450 ₽",
         "volume": "",
@@ -7495,7 +7495,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_17",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Karkade Gin",
         "price": "450 ₽",
         "volume": "",
@@ -7508,7 +7508,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_18",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Kiwi Smoothie",
         "price": "450 ₽",
         "volume": "",
@@ -7521,7 +7521,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-shots_19",
         "area": "bar",
-        "block": "Шоты Slow",
+        "block": "Шоты",
         "name": "Tropical Splash",
         "price": "450 ₽",
         "volume": "",
@@ -7573,7 +7573,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-lemon_23",
         "area": "bar",
-        "block": "Лимонады Slow",
+        "block": "Лимонады",
         "name": "Малина / Огурец",
         "price": "",
         "volume": "",
@@ -7586,7 +7586,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-lemon_24",
         "area": "bar",
-        "block": "Лимонады Slow",
+        "block": "Лимонады",
         "name": "Груша / Кактус / Яблоко",
         "price": "",
         "volume": "",
@@ -7599,7 +7599,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-lemon_25",
         "area": "bar",
-        "block": "Лимонады Slow",
+        "block": "Лимонады",
         "name": "Пряные ягоды / Тоник",
         "price": "",
         "volume": "",
@@ -7612,7 +7612,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-lemon_26",
         "area": "bar",
-        "block": "Лимонады Slow",
+        "block": "Лимонады",
         "name": "Киви / Фейхоа",
         "price": "",
         "volume": "",
@@ -7625,7 +7625,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-lemon_27",
         "area": "bar",
-        "block": "Лимонады Slow",
+        "block": "Лимонады",
         "name": "Манго / Маракуйя",
         "price": "",
         "volume": "",
@@ -7898,7 +7898,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_48",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "«Альфабетто» Брют",
         "price": "",
         "volume": "",
@@ -7911,7 +7911,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_49",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "«Креман де Луар Тюркуаз» Брют",
         "price": "",
         "volume": "",
@@ -7924,7 +7924,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_50",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Моет и Шандон Брют Империаль",
         "price": "",
         "volume": "",
@@ -7937,7 +7937,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_51",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Пино Гриджио",
         "price": "",
         "volume": "",
@@ -7950,7 +7950,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_52",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Совиньон Блан",
         "price": "",
         "volume": "",
@@ -7963,7 +7963,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_53",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Рислинг",
         "price": "",
         "volume": "",
@@ -7976,7 +7976,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_54",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Шардоне · Пти Шабли",
         "price": "",
         "volume": "",
@@ -7989,7 +7989,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_55",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Гевюрцтраминер",
         "price": "",
         "volume": "",
@@ -8002,7 +8002,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_56",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "La Jaglerie Rosé d'Anjou",
         "price": "",
         "volume": "",
@@ -8015,7 +8015,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_57",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Санджовезе (Тоскана)",
         "price": "",
         "volume": "",
@@ -8028,7 +8028,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_58",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Карменере",
         "price": "",
         "volume": "",
@@ -8041,7 +8041,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_59",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Шираз · Каберне Совиньон",
         "price": "",
         "volume": "",
@@ -8054,7 +8054,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_60",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Monte Real Tempranillo",
         "price": "",
         "volume": "",
@@ -8067,7 +8067,7 @@ window.SLOW_ACADEMY_DATA = {
       {
         "id": "bar-wine_61",
         "area": "bar",
-        "block": "Вино Slow",
+        "block": "Вино",
         "name": "Bouchard · Кот-дю-рон",
         "price": "",
         "volume": "",

@@ -76,7 +76,7 @@
       return `<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Тренировка завершена</div><div class="result-circle"><strong>${qz.score}/${qz.questions.length}</strong></div><h1>${esc(qz.label)}</h1><p>${pct}% правильных ответов. Тренировка рейтинг не меняет.</p><button class="primary" onclick="state.slowSelfQuiz=null;state.route='home';save();render()">В кабинет</button></div></section>`;
     }
     const q=qz.questions[qz.index],sel=qz.answers[qz.index];
-    return `<section class="quiz-shell"><div class="quiz-top"><div><div class="quiz-kicker">Slow · тренировочный тест</div><h2>${esc(qz.label)}</h2></div><button class="ghost" onclick="state.route='home';save();render()">Закрыть</button></div><div class="quiz-progress-label">Вопрос ${qz.index+1} из ${qz.questions.length}</div><div class="quiz-progress"><i style="width:${Math.round(qz.index/qz.questions.length*100)}%"></i></div><div class="quiz-card"><h1>${esc(q.text)}</h1><div class="quiz-options">${q.options.map((o,i)=>`<button class="quiz-option ${sel===i?'selected':''}" onclick="slowSelfAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${qz.answered?`<div class="slow-feedback"><b>${sel===q.correctIndex?'Верно':'Неверно'}</b><p>${esc(q.explanation||'')}</p></div><button class="primary" onclick="slowSelfNext()">${qz.index+1===qz.questions.length?'Завершить':'Следующий вопрос'}</button>`:''}</div></section>`;
+    return `<section class="quiz-shell"><div class="quiz-top"><div><div class="quiz-kicker">Тренировочный тест</div><h2>${esc(qz.label)}</h2></div><button class="ghost" onclick="state.route='home';save();render()">Закрыть</button></div><div class="quiz-progress-label">Вопрос ${qz.index+1} из ${qz.questions.length}</div><div class="quiz-progress"><i style="width:${Math.round(qz.index/qz.questions.length*100)}%"></i></div><div class="quiz-card"><h1>${esc(q.text)}</h1><div class="quiz-options">${q.options.map((o,i)=>`<button class="quiz-option ${sel===i?'selected':''}" onclick="slowSelfAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${qz.answered?`<div class="slow-feedback"><b>${sel===q.correctIndex?'Верно':'Неверно'}</b><p>${esc(q.explanation||'')}</p></div><button class="primary" onclick="slowSelfNext()">${qz.index+1===qz.questions.length?'Завершить':'Следующий вопрос'}</button>`:''}</div></section>`;
   }
   window.slowSelfAnswer=function(i){const qz=state.slowSelfQuiz;if(!qz||qz.answered)return;const q=qz.questions[qz.index];qz.answers[qz.index]=i;qz.answered=true;if(i===q.correctIndex)qz.score++;save();render()}
   window.slowSelfNext=function(){const qz=state.slowSelfQuiz;if(!qz)return;qz.index++;qz.answered=false;save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0})}
@@ -86,7 +86,7 @@
 
   blockHTML=function(area,block){
     const xs=STOCK[area].filter(x=>x.block===block);
-    return `<div class="head"><div><h2>${esc(block)}</h2><p>${xs.length} позиций Slow</p></div><button class="ghost" onclick="startSelfSlowQuiz('${area}','${encodeURIComponent(block)}',null,'${encodeURIComponent(block)}')">Тест по блоку</button></div><div class="menu-grid">${xs.map(menuCard).join('')}</div>`;
+    return `<div class="head"><div><h2>${esc(block)}</h2><p>${xs.length} позиций</p></div><button class="ghost" onclick="startSelfSlowQuiz('${area}','${encodeURIComponent(block)}',null,'${encodeURIComponent(block)}')">Тест по блоку</button></div><div class="menu-grid">${xs.map(menuCard).join('')}</div>`;
   }
   const _start=startSelfSlowQuiz;
   startSelfSlowQuiz=function(area,encBlock,itemId,encLabel){_start(area,decodeURIComponent(encBlock||''),itemId,decodeURIComponent(encLabel||encBlock||''))};
@@ -114,7 +114,7 @@
     const questions=q.questionSet,question=questions[q.index],selected=q.answers[q.index];
     if(!question)return staffHome();
     const correctIndex=question.correctIndex??question.options.indexOf(question.correct);
-    return `<section class="quiz-shell"><div class="quiz-top"><div><div class="quiz-kicker">Slow · тест от управляющего</div><h2>${esc(t.itemName||t.block)}</h2></div><button class="ghost" onclick="state.route='home';save();render()">Закрыть</button></div><div class="quiz-progress-label">Вопрос ${q.index+1} из ${questions.length}</div><div class="quiz-progress"><i style="width:${Math.round(q.index/questions.length*100)}%"></i></div><div class="quiz-card"><h1>${esc(question.text)}</h1><div class="quiz-options">${question.options.map((o,i)=>`<button class="quiz-option ${selected===i?'selected':''}" onclick="chooseQuizAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${q.feedbackShown?`<div class="slow-feedback"><b>${selected===correctIndex?'Верно':'Неверно'}</b><p>${esc(question.explanation||'')}</p></div><button class="primary" onclick="nextQuizQuestion()">${q.index+1===questions.length?'Завершить':'Следующий вопрос'}</button>`:''}</div></section>`
+    return `<section class="quiz-shell"><div class="quiz-top"><div><div class="quiz-kicker">${t.workflowPreparation?'Самостоятельная тренировка':'Тест от управляющего'}</div><h2>${esc(t.itemName||t.block)}</h2></div><button class="ghost" onclick="state.route='home';save();render()">Закрыть</button></div><div class="quiz-progress-label">Вопрос ${q.index+1} из ${questions.length}</div><div class="quiz-progress"><i style="width:${Math.round(q.index/questions.length*100)}%"></i></div><div class="quiz-card"><h1>${esc(question.text)}</h1><div class="quiz-options">${question.options.map((o,i)=>`<button class="quiz-option ${selected===i?'selected':''}" onclick="chooseQuizAnswer(${i})"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${q.feedbackShown?`<div class="slow-feedback"><b>${selected===correctIndex?'Верно':'Неверно'}</b><p>${esc(question.explanation||'')}</p></div><button class="primary" onclick="nextQuizQuestion()">${q.index+1===questions.length?'Завершить':'Следующий вопрос'}</button>`:''}</div></section>`
   }
   finishTrainingTest=function(){
     const q=state.activeQuiz;if(!q)return;const t=state.assignedTests.find(x=>x.id===q.testId);if(!t)return;
@@ -122,7 +122,7 @@
     questions.forEach((question,i)=>{const ci=question.correctIndex??question.options.indexOf(question.correct);if(q.answers[i]===ci)correct++});
     t.status='done';t.correct=correct;t.total=questions.length;t.score=Math.round(correct/questions.length*100);t.completedAt=`${today()} ${testTime()}`;t.managerSeen=false;
     state.testResults.push({testId:t.id,runId:state.demoRunId||null,employeeId:t.employeeId,area:t.area,block:t.block,correct,total:t.total,score:t.score,completedAt:t.completedAt,source:'slow'});
-    state.route='assigned-test-result';save();render();showToast('Тест Slow завершён. Рейтинг не изменился.');
+    state.route='assigned-test-result';save();render();showToast('Тест завершён. Рейтинг не изменился.');
   }
 
   render();

@@ -68,7 +68,7 @@
     ],
     'manager-home':[
       {sel:'.team-score-card',title:'Рейтинг команды'},
-      {sel:'.employee-compact[data-employee-id="e1"]',title:'Откройте карточку Ильи',action:true}
+      {sel:'.employee-compact[data-employee-id="e1"]',title:'Откройте карточку официанта',action:true}
     ],
     'employee-detail':[
       {sel:'.employee-detail-head',title:'Профиль сотрудника'},
@@ -86,13 +86,13 @@
       {sel:'#nav',title:'Навигация'}
     ],
     'learn:kitchen':[
-      {sel:'.head',title:'Кухня Slow'},
+      {sel:'.head',title:'Кухня'},
       {sel:'.toolbar',title:'Разделы меню'},
       {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка блюда'},
       {sel:'#menuBlock .ghost, .head .ghost',title:'Тест по блоку'}
     ],
     'learn:bar':[
-      {sel:'.head',title:'Бар Slow'},
+      {sel:'.head',title:'Бар'},
       {sel:'.toolbar',title:'Разделы бара'},
       {sel:'.menu-grid .menu-card, #menuBlock .menu-card',title:'Карточка напитка'},
       {sel:'#menuBlock .ghost, .head .ghost',title:'Проверить знания'}

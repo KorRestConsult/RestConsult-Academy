@@ -121,7 +121,7 @@
       (t.assignmentType==='attestation'?window.openAssignedAttestation:window.openAssignedTest)(t.id);
       return;
     }
-    showToast('Изучены все '+s.total+' позиций блока. Теперь можно пройти аттестацию.');
+    showToast('Изучены все '+s.total+' позиций блока. Теперь можно пройти проверку.');
     setTimeout(()=>{
       const btn=document.querySelector('.attestation-card .primary,.assigned-test .primary');
       if(btn)window.RAOnboarding?.highlight('.attestation-card .primary,.assigned-test .primary');
@@ -154,7 +154,7 @@
       '<button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тренировочный тест</button>';
     openModal('<div class="modal-head"><div><div class="kicker">'+(bar?'Бар':'Кухня')+' · '+esc(x.block)+'</div><h2>'+esc(x.name)+'</h2><p>'+esc(description)+'</p></div><button class="closebtn" onclick="closeModal()">×</button></div>'+
       studyInfo+
-      (x.photo?'<div class="detail-photo ra-study-photo"><img src="'+esc(x.photo)+'" alt="'+esc(x.name)+'" loading="eager"></div>':'')+
+      (x.photo?'<div class="detail-photo ra-study-photo"><img src="'+esc(new URL(x.photo,document.baseURI).href)+'" alt="'+esc(x.name)+'" loading="eager"></div>':'')+
       '<div class="ra-study-label">МАТЕРИАЛ ДЛЯ ИЗУЧЕНИЯ</div><div class="facts ra-study-facts">'+facts.map(([k,v])=>'<div class="fact '+(['Состав','Вкусные слова','Скрипт продаж','Скрипт / сервис'].includes(k)?'wide':'')+'"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('')+'</div>'+
       '<div class="modal-actions ra-study-actions">'+action+'</div>');
     // Each next dish must open at the beginning of its own card.
