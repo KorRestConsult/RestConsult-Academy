@@ -102,3 +102,11 @@ body.ra-guide-reading .ra-reading-footer .primary:disabled{opacity:.45}
 .ra-study-hint{font-size:13px;color:#59665b}
 body.ra-guide-reading #modal .ra-study-actions{flex-wrap:wrap;gap:10px}
 @media(max-width:520px){.ra-dish-row{gap:6px;padding:7px}.ra-dish-open img{width:48px;height:48px}.ra-dish-open b{font-size:14px}.ra-dish-row>.ghost{font-size:11px;max-width:100px;white-space:normal}}
+
+/* Staff learning keeps instructions in the document flow. No dark overlay. */
+.ra-staff-note{background:#f3f4ed;border-color:#dedfd3;border-left-color:#ad935f}
+.ra-local-cue{display:flex;align-items:center;gap:5px;color:#a52c28;font-size:12px;font-weight:600;margin:8px 0 4px;pointer-events:none;flex-basis:100%;grid-column:1/-1}
+.ra-local-cue svg{width:76px;height:27px;flex-shrink:0;overflow:visible}
+.ra-local-cue path{fill:none;stroke:#d12426;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:raPencilDraw .65s ease .95s forwards}
+body.ra-guide-reading.ra-staff-reading #raPencilArrow{display:block!important}
+@media(prefers-reduced-motion:reduce){.ra-local-cue path{animation:none;stroke-dashoffset:0}}

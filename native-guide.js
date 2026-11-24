@@ -1,5 +1,12 @@
 (function(){
 const guided=()=>!!state.compactDemo;
+const handoffKey='ra-guide-waiter-active';
+function rememberHandoff(){try{sessionStorage.setItem(handoffKey,'1')}catch(e){}}
+function clearHandoff(){try{sessionStorage.removeItem(handoffKey)}catch(e){}}
+function recoverHandoff(){
+ if(!['staff-pin','home','learn','assigned-test','assigned-test-result','assigned-attestation','assigned-attestation-result','slow-self-quiz'].includes(state.route)||!(state.auth==='staff'||state.route==='staff-pin'))return;
+ try{if(sessionStorage.getItem(handoffKey)==='1'&&!state.guideStaffDone&&!state.compactDemo){state.compactDemo=true;state.compactVersion=9;state.guideManagerDone=true;save()}}catch(e){}
+}
 const task=k=>state.assignedTests.find(t=>t.employeeId==='e1'&&t.assignmentType===k);
 const modal=()=>document.getElementById('modalWrap').classList.contains('open');
 const step=(sel,title,desc,n)=>({sel,title,desc,n});
@@ -97,7 +104,7 @@ function goBack(){
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
 function clear(keepArrow=false){if(!keepArrow)window.RAPencil?.hide();target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
-function finish(){document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
+function finish(){clearHandoff();document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.show();schedule()}
 // Scroll the actual scrolling container and cancel competing smooth navigation.
 const priorScroll=window.raScrollPage;
@@ -126,7 +133,7 @@ function learningSurface(){
  return null
 }
 function learningNote(surface,s){
- clear();
+ clear(state.auth==='staff');
  document.body.classList.add('ra-guide-reading');
  const list=surface.matches('.ra-assigned-menu,#menuBlock'),isModal=surface.id==='modal',studying=!!surface.querySelector('.ra-study-facts'),checks=!!surface.querySelector('.ra-check-phase'),report=!!surface.querySelector('.ra-ops-row'),mini=!!surface.querySelector('[data-training-read]'),result=!!surface.querySelector('.quiz-result,.attestation-result');
  const title=list?'Выберите блюдо для изучения':report?s.title:checks?'Контроль стандартов':mini?'Подготовка к тренингу':studying?'Изучите в своём темпе':result?'Результат обучения':'Проверка знаний';
@@ -141,6 +148,10 @@ function learningNote(surface,s){
   note.querySelector('[data-learning-quit]').onclick=finish;
  }
  note.querySelector('b').textContent=title;note.querySelector('p').textContent=text;
+ if(state.auth==='staff'){
+  note.classList.add('ra-staff-note');
+  note.querySelector('b').textContent='Официант · '+s.n+' / 8 · '+title;
+ }
  if(list&&!state.studyAssignmentId){
   let next=note.querySelector('[data-guide-menu-next]');
   if(!next){next=document.createElement('button');next.className='primary';next.dataset.guideMenuNext='1';next.textContent='Продолжить демонстрацию →';note.firstElementChild.append(next)}
@@ -157,12 +168,38 @@ function learningNote(surface,s){
   if(!footer){footer=document.createElement('div');footer.className='ra-reading-footer';footer.innerHTML='<button type="button" class="primary" data-report-continue>Продолжить →</button>';surface.append(footer);footer.querySelector('button').onclick=()=>surface.querySelector('.closebtn')?.click()}
   const b=footer.querySelector('button');b.disabled=checks&&state.auth==='staff'&&!state.guideHall;
  }
+ if(state.auth==='staff'){
+  let action=null;
+  if(list)action=surface.querySelector('.ra-dish-open');
+  else if(studying)action=surface.querySelector('.ra-study-actions .primary');
+  else if(result)action=surface.querySelector('[data-self-return],.quiz-result .primary,.attestation-result .primary');
+  else if(mini)action=surface.querySelector('[data-training-read]');
+  else if(checks)action=surface.querySelector('input[data-shift-id]:not(:checked):not(:disabled)')||surface.querySelector('[data-report-continue]:not(:disabled)');
+  else if(report)action=surface.querySelector('[data-report-continue]');
+  else if(state.route==='slow-self-quiz'||state.route==='assigned-test'||state.route==='assigned-attestation')action=[...surface.querySelectorAll('.quiz-card .primary:not(:disabled),.attestation-next:not(:disabled)')].find(e=>e.getClientRects().length);
+  // Never aim at an answer; give an inline cue near the answer group instead.
+  const cueTarget=(list?action?.closest('.ra-dish-row'):checks?action?.closest('label')||action:studying?action?.closest('.ra-study-actions'):action)||(!studying&&!list&&!report&&!checks&&!mini&&!result?surface.querySelector('.quiz-options'):null);
+  surface.querySelectorAll('.ra-local-cue').forEach(c=>{if(c.nextElementSibling!==cueTarget)c.remove()});
+  if(cueTarget&&cueTarget.parentElement&&!cueTarget.previousElementSibling?.classList.contains('ra-local-cue')){
+   const cue=document.createElement('div');cue.className='ra-local-cue';
+   const prompt=list?'Откройте любое блюдо':studying?'Когда изучите материал':result?'Выберите дальнейшее действие':checks?'Отметьте задачу или продолжите':mini?'Подтвердите изучение':report?'После просмотра':action?'Продолжите проверку':'Выберите один ответ';
+   cue.innerHTML='<span>'+prompt+'</span><svg viewBox="0 0 76 27" width="76" height="27" aria-hidden="true"><path pathLength="1" d="M 2 4 Q 21 0 37 8 T 62 20 M 51 20 Q 58 19 62 20 L 61 10"/></svg>';
+   cueTarget.before(cue);
+  }
+  // Connect the explanation to the actual visible list action only; no overlay while reading or answering.
+  if(list&&action){
+   const ar=action.getBoundingClientRect(),nr=note.getBoundingClientRect();
+   const vv=window.visualViewport,top=vv?.offsetTop||0,bottom=top+(vv?.height||innerHeight);
+   if(ar.top>=top&&ar.bottom<=bottom&&nr.bottom<ar.top-18&&nr.top>=top){window.RAPencil?.point(note,action,'staff-list|'+state.learnArea+'|'+(state.selfMenuBlock||state.studyAssignmentId||''))}
+   else window.RAPencil?.hide()
+  }else window.RAPencil?.hide();
+ }
 
 }
 function place(){
-frame=0;document.body.classList.toggle('ra-native-guided',guided());
-const readingSurface=guided()?learningSurface():null;document.body.classList.toggle('ra-guide-reading',!!readingSurface);
-if(!readingSurface)document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());
+frame=0;recoverHandoff();document.body.classList.toggle('ra-native-guided',guided());
+const readingSurface=guided()?learningSurface():null;document.body.classList.toggle('ra-guide-reading',!!readingSurface);document.body.classList.toggle('ra-staff-reading',!!readingSurface&&state.auth==='staff');
+if(!readingSurface)document.querySelectorAll('.ra-learning-note,.ra-reading-footer,.ra-local-cue').forEach(n=>n.remove());
 const pinMode=['manager-pin','staff-pin'].includes(state.route);document.body.classList.toggle('ra-guide-pin',guided()&&pinMode);document.documentElement.style.setProperty('--ra-visible-height',(window.visualViewport?.height||innerHeight)+'px');
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear(true);const intro=document.getElementById('raProductIntro');window.RAPencil?.point(intro.querySelector('.ra-intro-categories'),intro.querySelector('[data-start]'),'intro');return}
 if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
@@ -269,7 +306,8 @@ const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='man
 if(mgr&&s.n===2&&m&&close)state.guideSales=true;
 if(mgr&&s.n===3&&e.target.closest('[data-shift-role="bar"]'))state.guideCheckedBar=true;
 if(mgr&&s.n===3&&m&&close)state.guideManagerCheck=true;
-if(mgr&&e.target.closest('#roleBtn')&&state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager))state.guideManagerDone=true;
+if(mgr&&e.target.closest('#roleBtn')&&state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager)){state.guideManagerDone=true;rememberHandoff()}
+if(state.route==='roles'&&e.target.closest('.role-card:nth-child(2)')&&state.guideManagerDone)rememberHandoff();
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
 if(staff&&rSelfResult(e)&&!window.raAssignedStudyResume?.()){if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true}
 if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
@@ -281,12 +319,14 @@ if(staff&&s.n===7&&m&&close)state.guideSchedule=true;
 if(staff&&s.n===8&&m&&close)state.guidePay=true;
 save();setTimeout(schedule,30)
 },true);
+window.addEventListener('pageshow',()=>{schedule();setTimeout(schedule,180)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();setTimeout(schedule,180)}});
 window.addEventListener('ra-intro-change',schedule);window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
-const base=render;render=function(){base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
+const base=render;render=function(){recoverHandoff();base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
 const reset=window.restartAcademyTour;
-window.restartAcademyTour=async function(){state.compactDemo=true;state.compactVersion=9;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideSelfSeen','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
+window.restartAcademyTour=async function(){clearHandoff();state.compactDemo=true;state.compactVersion=9;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideSelfSeen','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
 if(state.compactDemo&&state.compactVersion!==9){state.compactDemo=false;save()}
 render();
 })();
