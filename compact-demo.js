@@ -2,17 +2,17 @@
 const guided=()=>!!state.compactDemo;
 const task=kind=>state.assignedTests.find(t=>t.employeeId==='e1'&&t.assignmentType===kind);
 const steps=[
-['Управляющий','Выручка и план продаж','Открыть продажи',()=>raOpsFinance()],
-['Команда','Знания и рейтинг','Открыть сотрудника',()=>{state.demoHandoff=null;openEmployeePage('e1')}],
-['Обучение','Тест по конкретному блюду','Назначить тест',()=>raChooseDish('e1','kitchen',encodeURIComponent('Горячие закуски')),()=>!!task('training')],
-['Контроль','Аттестация раздела меню','Назначить аттестацию',()=>runAttestationPlaceholder('e1','kitchen',encodeURIComponent('Горячие закуски')),()=>!!task('attestation')],
-['Официант','Личный рейтинг и задания','Открыть кабинет',()=>switchRole('Официант','e1')],
-['Меню','Состав · вкусные слова · скрипт','Изучить и пройти тест',()=>studyAssignmentMaterial(task('training').id),()=>task('training')?.status==='done'],
-['Аттестация','Знания всего блока','Изучить раздел и пройти',()=>{if(state.auth!=='staff'||state.currentEmployee!=='e1')switchRole('Официант','e1');const t=task('attestation');t.materialReviewed?openAssignedAttestation(t.id):studyAssignmentMaterial(t.id)},()=>task('attestation')?.status==='done'],
-['Официант','Открытие смены','Отметить чек-лист',()=>raOpsChecks('hall'),()=>checked('hall')],
-['Управляющий','Результат обучения · отдельно от аттестации','Посмотреть результат',()=>{switchRole('Управляющий');openEmployeePage('e1')}],
-['Управляющий','Контроль чек-листа зала','Проверить чек-листы',()=>{switchRole('Управляющий');raOpsChecks('hall')}],
-['Результат','Рейтинг обновлён','Открыть рейтинг',()=>{switchRole('Управляющий');openEmployeePage('e1')}]
+['Продажи под контролем','Выручка, средний чек и личные продажи — ориентиры для обучения команды.','Открыть продажи',()=>raOpsFinance()],
+['Диагностика знаний','Рейтинг по разделам показывает пробелы в знаниях каждого официанта.','Открыть сотрудника',()=>{state.demoHandoff=null;openEmployeePage('e1')}],
+['Точечное обучение','Тест по блюду закрепляет состав, вкусные слова и рекомендации гостю.','Назначить тест',()=>raChooseDish('e1','kitchen',encodeURIComponent('Горячие закуски')),()=>!!task('training')],
+['Единый стандарт знаний','Аттестация проверяет весь раздел меню и формирует официальный рейтинг.','Назначить аттестацию',()=>runAttestationPlaceholder('e1','kitchen',encodeURIComponent('Горячие закуски')),()=>!!task('attestation')],
+['Официант знает свои цели','Личные задания и рейтинг показывают, чему учиться и над чем работать.','Открыть кабинет',()=>switchRole('Официант','e1')],
+['Знать меню — значит уметь продавать','Состав, вкусные слова и скрипты помогают развивать личные продажи, допродажи и средний чек.','Изучить и пройти тест',()=>studyAssignmentMaterial(task('training').id),()=>task('training')?.status==='done'],
+['Знания подтверждены','Изучение всего раздела и проверка знаний вместо формального ознакомления с меню.','Изучить раздел и пройти',()=>{if(state.auth!=='staff'||state.currentEmployee!=='e1')switchRole('Официант','e1');const t=task('attestation');t.materialReviewed?openAssignedAttestation(t.id):studyAssignmentMaterial(t.id)},()=>task('attestation')?.status==='done'],
+['Стандарты в каждой смене','Чек-лист помогает не забывать обязательные действия перед встречей гостей.','Отметить чек-лист',()=>raOpsChecks('hall'),()=>checked('hall')],
+['Обучение без формальности','Управляющий видит результаты заданий; тренировка не подменяет официальную аттестацию.','Посмотреть результат',()=>{switchRole('Управляющий');openEmployeePage('e1')}],
+['Контроль исполнения','Видно, какие задачи выполнены, кем и когда, а какие требуют внимания.','Проверить чек-листы',()=>{switchRole('Управляющий');raOpsChecks('hall')}],
+['Результат обучения и контроля','Рейтинг знаний обновляется. Влияние обучения на продажи оценивается по динамике среднего чека и выручки.','Открыть рейтинг',()=>{switchRole('Управляющий');openEmployeePage('e1')}]
 ];
 function checked(k){return Object.values(state.shiftChecks||{}).some(d=>Object.keys(d).some(id=>id.startsWith(k+'-')))}
 function switchRole(role,id='e1'){closeModal();state.role=role;state.auth=role==='Управляющий'?'manager':'staff';state.currentEmployee=id;state.route='home';state.demoHandoff=null;state.filter='Все';save();render()}
