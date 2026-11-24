@@ -18,7 +18,7 @@ function checked(k){return Object.values(state.shiftChecks||{}).some(d=>Object.k
 function switchRole(role,id='e1'){closeModal();state.role=role;state.auth=role==='Управляющий'?'manager':'staff';state.currentEmployee=id;state.route='home';state.demoHandoff=null;state.filter='Все';save();render()}
 function draw(){
 const old=document.getElementById('raCompact');if(old)old.remove();
-if(!guided())return;
+if(!guided()){const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию KORREST AI';b.style.cssText='display:block;margin:0 auto 16px;min-height:44px';b.onclick=()=>{window.RASalesIntro?.hide();window.restartAcademyTour()};root.prepend(b)}return} document.getElementById('raDemoLaunch')?.remove();
 let i=Math.min(steps.length-1,state.compactStep||0),s=steps[i],done=s[4]?s[4]():state.compactOpened===i;
 const chapter=i<4?'I · Управляющий':i<8?'II · Официант':'III · Результат';
 let el=document.createElement('section');el.id='raCompact';el.className='ra-compact';
@@ -30,8 +30,8 @@ if(done){if(i===steps.length-1){state.compactDemo=false;state.demoHandoff=null;l
 state.compactOpened=i;save();s[3]();draw()
 };
 }
-if(state.compactDemo&&state.compactVersion!==2){state.compactDemo=false;save()}
+if(state.compactDemo&&state.compactVersion!==3){state.compactDemo=false;save()}
 const base=render;render=function(){base();draw()};
-const reset=window.restartAcademyTour;window.restartAcademyTour=async function(){state.compactVersion=2;state.compactDemo=true;state.compactStep=0;state.compactOpened=-1;await reset();switchRole('Управляющий')};
+const reset=window.restartAcademyTour;window.restartAcademyTour=async function(){state.compactVersion=3;state.compactDemo=true;state.compactStep=0;state.compactOpened=-1;const pending=reset();switchRole('Управляющий');await pending};
 render();
 })();

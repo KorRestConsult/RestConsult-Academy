@@ -346,7 +346,7 @@
       console.warn('[RA Demo reset]',e);
     }
     render();
-    setTimeout(()=>start('roles',true),180);
+    if(!state.compactDemo)setTimeout(()=>{if(!state.compactDemo)start('roles',true)},180);
   };
   window.RAOnboarding={
     startKey:(key,force=true)=>start(key,force),
