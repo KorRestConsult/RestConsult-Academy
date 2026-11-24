@@ -22,12 +22,14 @@
   const ax=a.left+a.width/2,ay=a.top+a.height/2;
   let sx,sy,ex,ey;
   const dx=x-ax,dy=y-ay;
+  const minLength=vw>=768?100:76;
+  const insetX=Math.min(38,b.width*.4),insetY=Math.min(38,b.height*.4);
   if(b.top>=a.bottom||b.bottom<=a.top){
    const down=dy>=0;sx=clamp(x,a.left+14,a.right-14);sy=down?a.bottom+3:a.top-3;
-   ex=clamp(sx,b.left+Math.min(14,b.width/2),b.right-Math.min(14,b.width/2));ey=down?b.top+5:b.bottom-5;
+   ex=clamp(sx,b.left+Math.min(14,b.width/2),b.right-Math.min(14,b.width/2));ey=down?b.top+insetY:b.bottom-insetY;
   }else if(b.left>=a.right||b.right<=a.left){
    const right=dx>=0;sx=right?a.right+3:a.left-3;sy=clamp(y,a.top+12,a.bottom-12);
-   ex=right?b.left+5:b.right-5;ey=clamp(sy,b.top+Math.min(12,b.height/2),b.bottom-Math.min(12,b.height/2));
+   ex=right?b.left+insetX:b.right-insetX;ey=clamp(sy,b.top+Math.min(12,b.height/2),b.bottom-Math.min(12,b.height/2));
   }else {
    // A real action inside the guide: draw from the explanation towards its CTA.
    sx=clamp(x-34,a.left+6,a.right-6);sy=clamp(b.top-24,a.top+6,a.bottom-6);
@@ -35,14 +37,33 @@
   }
   sx=clamp(sx,5,vw-5);sy=clamp(sy,5,vh-5);ex=clamp(ex,6,vw-6);ey=clamp(ey,6,vh-6);
   let vx=ex-sx,vy=ey-sy,len=Math.hypot(vx,vy);
-  if(len<12){const off=26; sx=clamp(sx-(Math.abs(vx)>Math.abs(vy)?0:off),5,vw-5);sy=clamp(sy-(Math.abs(vx)>Math.abs(vy)?off:0),5,vh-5);vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy)}
+  if(len<minLength){
+   // Short gaps need a diagonal stroke across the empty part of the target, not a tiny hook.
+   const vertical=Math.abs(vy)>=Math.abs(vx);
+   if(vertical){
+    const low=Math.max(10,b.left+12),high=Math.min(vw-10,b.right-12);
+    if(high>=low){
+     const options=[low,high].sort((u,v)=>Math.abs(v-sx)-Math.abs(u-sx));
+     const shift=Math.sqrt(Math.max(0,minLength*minLength-vy*vy));
+     ex=clamp(sx+(options[0]>=sx?shift:-shift),low,high)
+    }
+   }else{
+    const low=Math.max(10,b.top+10),high=Math.min(vh-10,b.bottom-10);
+    if(high>=low){
+     const options=[low,high].sort((u,v)=>Math.abs(v-sy)-Math.abs(u-sy));
+     const shift=Math.sqrt(Math.max(0,minLength*minLength-vx*vx));
+     ey=clamp(sy+(options[0]>=sy?shift:-shift),low,high)
+    }
+   }
+   vx=ex-sx;vy=ey-sy;len=Math.hypot(vx,vy);
+  }
   const ux=vx/Math.max(1,len),uy=vy/Math.max(1,len),nx=-uy,ny=ux;
-  const bend=Math.min(27,Math.max(8,len*.18))*(ex>vw*.7?-1:1);
+  const bend=Math.min(42,Math.max(16,len*.22))*(ex>vw*.7?-1:1);
   const c1=[clamp(sx+vx*.27+nx*bend,5,vw-5),clamp(sy+vy*.27+ny*bend,5,vh-5)];
   const c2=[clamp(sx+vx*.72+nx*bend*.65,5,vw-5),clamp(sy+vy*.72+ny*bend*.65,5,vh-5)];
   const f=n=>Math.round(n*10)/10;
   const d='M '+f(sx)+' '+f(sy)+' C '+c1.map(f).join(' ')+', '+c2.map(f).join(' ')+', '+f(ex)+' '+f(ey);
-  const angle=Math.atan2(ey-c2[1],ex-c2[0]),h=Math.min(17,Math.max(10,len*.3)),spread=.53;
+  const angle=Math.atan2(ey-c2[1],ex-c2[0]),h=vw>=768?25:21,spread=.55;
   const left=[ex-h*Math.cos(angle-spread),ey-h*Math.sin(angle-spread)],right=[ex-h*Math.cos(angle+spread),ey-h*Math.sin(angle+spread)];
   const arrow='M '+left.map(f).join(' ')+' Q '+f(ex-h*.24*ux+nx*1.2)+' '+f(ey-h*.24*uy+ny*1.2)+' '+f(ex)+' '+f(ey)+' Q '+f(ex-h*.24*ux-nx*1.5)+' '+f(ey-h*.24*uy-ny*1.5)+' '+right.map(f).join(' ');
   layer.setAttribute('viewBox','0 0 '+vw+' '+vh);

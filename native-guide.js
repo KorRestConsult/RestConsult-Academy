@@ -134,9 +134,9 @@ if(reveal){
  }
 }
 const report=modal()&&el.matches('#modal .closebtn'),panel=report?document.getElementById('modal'):null;
-const g=16,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
+const g=innerWidth>=768?86:60,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
 let panelRect=panel?.getBoundingClientRect();
-const side=panelRect?Math.max(panelRect.left-2*g,vw-panelRect.right-2*g):0;
+const side=panelRect?Math.max(panelRect.left-g-16,vw-panelRect.right-g-16):0;
 const inline=!!panel&&side<235;
 card.classList.toggle('ra-guide-inline',inline);
 if(inline){if(card.parentElement!==panel)panel.prepend(card);card.style.width='';card.style.left='';card.style.top=''}
@@ -149,6 +149,7 @@ const cx=clamp(r.left+(r.width-w)/2,12,vw-w-12),cy=clamp(r.top+(r.height-h)/2,sa
 const candidates=[{x:cx,y:bounds.bottom+g},{x:cx,y:bounds.top-h-g},{x:bounds.right+g,y:cy},{x:bounds.left-w-g,y:cy}];
 const fits=c=>c.x>=12&&c.y>=safeTop&&c.x+w<=vw-12&&c.y+h<=vh-12;
 let pos=candidates.find(fits);
+if(!pos){const compact=[{x:cx,y:bounds.bottom+36},{x:cx,y:bounds.top-h-36},{x:bounds.right+36,y:cy},{x:bounds.left-w-36,y:cy}];pos=compact.find(fits)}
 if(!pos){
  const overlap=c=>Math.max(0,Math.min(c.x+w,bounds.right)-Math.max(c.x,bounds.left))*Math.max(0,Math.min(c.y+h,bounds.bottom)-Math.max(c.y,bounds.top));
  pos=candidates.map(c=>({x:clamp(c.x,12,vw-w-12),y:clamp(c.y,safeTop,Math.max(safeTop,vh-h-12))})).sort((a,b)=>overlap(a)-overlap(b))[0]
