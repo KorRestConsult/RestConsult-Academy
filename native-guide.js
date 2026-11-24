@@ -13,7 +13,7 @@ function currentStep(){
  if(r==='staff-select')return step('.staff-select-card[onclick*="e1"]','Выберите сотрудника','Личный кабинет хранит задания, знания и рабочий график.',1);
  if(r==='staff-pin')return step('.pin-keypad','Персональный вход','Введите демонстрационный PIN: '+(current().pin||'1111')+'. Официант не видит управление командой.',1);
  if(state.auth==='manager'){
-  if(!state.guideSales)return m?step('#modal .closebtn','Коммерческие показатели','Выручка, план, средний чек и личные продажи. После внедрения можно сравнивать динамику.',2):step('.ra-ops-tile[onclick="raOpsFinance()"]','Управление продажами','Вся выручка и личные продажи — единая точка контроля.',2);
+  if(!state.guideSales)return m?step('#modal .closebtn','Коммерческие показатели','От выручки ресторана до личного результата каждого официанта. План, средний чек и продажи помогают выявлять точки роста и оценивать эффект обучения.',2):step('.ra-ops-tile[onclick="raOpsFinance()"]','Управление продажами','Управляющий видит выручку ресторана и личные продажи каждого сотрудника: обучение становится инструментом управления коммерческим результатом.',2);
   if(!state.guideManagerCheck){
    if(m){
     const bar=document.querySelector('#modal [data-shift-role="bar"]'),manager=document.querySelector('#modal [data-shift-role="shift_manager"]');
@@ -71,7 +71,7 @@ function currentStep(){
   if(!state.guideHall)return m?step('#modal input[data-shift-id]','Интерактивный чек-лист','Отметьте выполненную задачу. Управляющий сразу увидит сотрудника и время.',6):step('.ra-ops-tile[onclick="raOpsChecks()"]','Рабочая смена','Официант видит только свои задачи смены.',6);
   if(m&&!state.guideHallClosed)return step('#modal .closebtn','Задача выполнена','Отметка сохранена и видна управляющему.',6);
   if(!state.guideSchedule)return m?step('#modal .closebtn','График','Демо расписания. При интеграции данные поступают из системы учёта.',7):step('.ra-ops-tile[onclick="raOpsSchedule()"]','Мой график','Официант знает свои смены.',7);
-  if(!state.guidePay)return m?step('#modal .closebtn','Начисления','Оклад, часы и бонусы — пример представления данных учёта. Реальная интеграция не подключена.',8):step('.ra-ops-tile[onclick="raOpsFinance()"]','Мои начисления','Официант понимает, из чего складывается оплата труда.',8);
+  if(!state.guidePay)return m?step('#modal .closebtn','Мой коммерческий результат','Официант видит личные продажи, план, средний чек и начисления. Он понимает свой вклад в выручку и может отслеживать собственный результат.',8):step('.ra-ops-tile[onclick="raOpsFinance()"]','Мои продажи','Личные продажи, выполнение плана, средний чек и начисления — в одном кабинете.',8);
   return step('.scorebox','Сценарий официанта завершён','Меню, задания, тренинги, график, начисления и стандарты в одном кабинете. Управляющий видит результаты.',8)
  }
  return null
