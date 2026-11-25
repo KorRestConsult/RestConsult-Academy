@@ -1,6 +1,6 @@
 // Public author/contact layer for the KORREST AI demo.
 (function(){
-  const SITE='https://korrestconsult.github.io/RestConsult/';
+  const SITE='https://restconsult.info/';
   const PHONE_DISPLAY='+7 906 543-13-48';
   const PHONE='tel:+79065431348';
   const TELEGRAM='https://t.me/KorRestConsalt';
