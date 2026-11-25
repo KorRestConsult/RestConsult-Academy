@@ -95,7 +95,7 @@ function goBack(){
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
 function clear(keepArrow=false){if(!keepArrow)window.RAPencil?.hide();target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
-function finish(){clearHandoff();if(state.slowSelfQuiz?.guidedDishPreview){state.slowSelfQuiz=null;state.studyAssignmentId=state.resumeStudyAssignmentId||null;state.resumeStudyAssignmentId=null;state.route=state.studyAssignmentId?'learn':'home'}document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
+function finish(){clearReadingRail();clearHandoff();if(state.slowSelfQuiz?.guidedDishPreview){state.slowSelfQuiz=null;state.studyAssignmentId=state.resumeStudyAssignmentId||null;state.resumeStudyAssignmentId=null;state.route=state.studyAssignmentId?'learn':'home'}document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.show();schedule()}
 // Scroll the actual scrolling container and cancel competing smooth navigation.
 const priorScroll=window.raScrollPage;
@@ -125,6 +125,35 @@ function learningSurface(){
 }
 // Staff uses the same green/gold language as the manager, but an in-flow guide
 // never obscures training materials. One local arrow per actionable screen.
+// A single continuous arrow, anchored in the scrollable document itself.
+function clearReadingRail(){
+ document.querySelectorAll('.ra-reading-rail').forEach(e=>e.classList.remove('ra-reading-rail'));
+ document.querySelectorAll('.ra-reading-arrow').forEach(e=>e.remove());
+}
+function readingRail(surface,note,action){
+ document.querySelectorAll('.ra-reading-rail').forEach(e=>{if(e!==surface)e.classList.remove('ra-reading-rail')});
+ surface.classList.add('ra-reading-rail');
+ let svg=surface.querySelector(':scope > .ra-reading-arrow');
+ if(!svg){
+  svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','ra-reading-arrow');
+  svg.setAttribute('aria-hidden','true');
+  svg.innerHTML='<path class="ra-rail-shaft" pathLength="1"/><path class="ra-rail-head" pathLength="1"/>';
+  surface.append(svg);
+ }
+ const m=surface.getBoundingClientRect(),a=note.getBoundingClientRect(),b=action.getBoundingClientRect();
+ const ox=m.left+surface.clientLeft,oy=m.top+surface.clientTop-surface.scrollTop;
+ const w=surface.clientWidth,rail=w-12;
+ const x1=Math.min(rail-6,a.right-ox+2),y1=a.bottom-oy-10;
+ const x2=Math.min(rail-9,b.right-ox-5),y2=b.top-oy+Math.min(12,b.height*.3);
+ const bend=Math.max(16,Math.min(44,(y2-y1)*.18)),mid=(y1+y2)/2;
+ const d='M '+x1+' '+y1+' C '+(rail-8)+' '+(y1+2)+' '+rail+' '+(y1+bend*.6)+' '+rail+' '+(y1+bend)+' C '+(rail+3)+' '+(mid-bend)+' '+(rail-4)+' '+(mid+bend)+' '+rail+' '+(y2-bend)+' Q '+rail+' '+(y2-10)+' '+x2+' '+y2;
+ const head='M '+(x2+4)+' '+(y2-15)+' Q '+(x2+1)+' '+(y2-6)+' '+x2+' '+y2+' Q '+(x2+8)+' '+(y2-1)+' '+(x2+15)+' '+(y2+1);
+ svg.setAttribute('viewBox','0 0 '+w+' '+Math.ceil(y2+10));
+ svg.style.width=w+'px';svg.style.height=Math.ceil(y2+10)+'px';
+ svg.querySelector('.ra-rail-shaft').setAttribute('d',d);
+ svg.querySelector('.ra-rail-head').setAttribute('d',head);
+}
 function staffLearningNote(surface,s){
  clear();
  document.body.classList.add('ra-guide-reading','ra-staff-reading');
@@ -203,7 +232,8 @@ function staffLearningNote(surface,s){
   if(footer&&note.nextElementSibling!==footer){note.after(footer);requestAnimationFrame(()=>{if(footer.isConnected)footer.scrollIntoView({block:'nearest',behavior:'auto'})})}
  }
  const focus=action||group;
- const longPointer=!!action&&((studying&&singleDish)||action.matches('[data-report-continue]'));
+ const longPointer=isModal&&!!action&&((studying&&singleDish)||action.matches('[data-report-continue]'));
+ if(!longPointer)clearReadingRail();
  document.querySelectorAll('.ra-long-arrow-target').forEach(e=>{if(e!==focus||!longPointer)e.classList.remove('ra-long-arrow-target')});
  document.querySelectorAll('.ra-staff-focus').forEach(e=>{if(e!==focus)e.classList.remove('ra-staff-focus')});
  document.querySelectorAll('.ra-local-cue,.ra-staff-pointer').forEach(e=>{if(e.parentElement!==focus)e.remove()});
@@ -211,9 +241,10 @@ function staffLearningNote(surface,s){
   const newlyFocused=!focus.classList.contains('ra-staff-focus');
   focus.classList.add('ra-staff-focus');focus.classList.toggle('ra-long-arrow-target',longPointer);
   // The whole answer group is framed, never a specific option.
-  if(action&&!focus.matches('input,select,textarea')&&!focus.querySelector(':scope > .ra-staff-pointer')){
+  if(longPointer){focus.querySelector(':scope > .ra-staff-pointer')?.remove();readingRail(surface,note,focus)}
+  else if(action&&!focus.matches('input,select,textarea')&&!focus.querySelector(':scope > .ra-staff-pointer')){
    const pointer=document.createElement('span');pointer.className='ra-staff-pointer';pointer.setAttribute('aria-hidden','true');
-   pointer.innerHTML=longPointer?'<svg viewBox="0 0 62 90"><path pathLength="1" d="M 13 3 C 56 24 12 47 35 83 M 24 72 L 35 83 L 46 68"/></svg>':'<svg viewBox="0 0 44 35"><path pathLength="1" d="M 3 3 C 24 3 31 12 34 29 M 24 21 L 34 29 L 41 18"/></svg>';
+   pointer.innerHTML='<svg viewBox="0 0 44 35"><path pathLength="1" d="M 3 3 C 24 3 31 12 34 29 M 24 21 L 34 29 L 41 18"/></svg>';
    focus.append(pointer)
   }
   if(guidedDish&&!result&&newlyFocused)requestAnimationFrame(()=>{if(focus.isConnected){const r=focus.getBoundingClientRect(),vv=window.visualViewport;if(r.bottom>(vv?.height||innerHeight)-16)focus.scrollIntoView({block:'nearest',behavior:'auto'})}});
@@ -223,7 +254,7 @@ function learningNote(surface,s){staffLearningNote(surface,s)}
 function place(){
 frame=0;recoverHandoff();document.body.classList.toggle('ra-native-guided',guided());
 const readingSurface=guided()?learningSurface():null;document.body.classList.toggle('ra-guide-reading',!!readingSurface);document.body.classList.toggle('ra-staff-reading',!!readingSurface&&state.auth==='staff');
-if(!readingSurface){document.querySelectorAll('.ra-learning-note,.ra-reading-footer,.ra-local-cue,.ra-staff-pointer').forEach(n=>n.remove());document.querySelectorAll('.ra-staff-focus,.ra-long-arrow-target').forEach(n=>n.classList.remove('ra-staff-focus','ra-long-arrow-target'))}
+if(!readingSurface){clearReadingRail();document.querySelectorAll('.ra-learning-note,.ra-reading-footer,.ra-local-cue,.ra-staff-pointer').forEach(n=>n.remove());document.querySelectorAll('.ra-staff-focus,.ra-long-arrow-target').forEach(n=>n.classList.remove('ra-staff-focus','ra-long-arrow-target'))}
 const pinMode=['manager-pin','staff-pin'].includes(state.route);document.body.classList.toggle('ra-guide-pin',guided()&&pinMode);document.documentElement.style.setProperty('--ra-visible-height',(window.visualViewport?.height||innerHeight)+'px');
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear(true);const intro=document.getElementById('raProductIntro');window.RAPencil?.point(intro.querySelector('.ra-intro-categories'),intro.querySelector('[data-start]'),'intro');return}
 if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
@@ -350,7 +381,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule(
 window.addEventListener('ra-intro-change',schedule);window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
 const base=render;render=function(){recoverHandoff();base();if(guided()){remember();}schedule()};
-const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
+const om=openModal,cm=closeModal;openModal=function(){clearReadingRail();om.apply(this,arguments);schedule()};closeModal=function(){clearReadingRail();cm.apply(this,arguments);schedule()};
 const reset=window.restartAcademyTour;
 window.restartAcademyTour=async function(){clearHandoff();state.compactDemo=true;state.compactVersion=9;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideAssignmentPreview','guideSelfSeen','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};
 if(state.compactDemo&&state.compactVersion!==9){state.compactDemo=false;save()}
