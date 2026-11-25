@@ -53,7 +53,7 @@ function enterDemoRole(role){
 }
 openRole=enterDemoRole;
 selectStaff=function(){enterDemoRole('Официант')};
-window.quickSwitchToWaiter=function(){if(state.compactDemo){if(!state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.assignedByManager)){showToast('Сначала назначьте тест по разделу «Салаты»');return}state.guideManagerDone=true;goRoles();return}enterDemoRole('Официант')};
+window.quickSwitchToWaiter=function(){if(state.compactDemo){if(!state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.itemId&&t.assignedByManager)){showToast('Сначала назначьте тест по одному салату');return}state.guideManagerDone=true;goRoles();return}enterDemoRole('Официант')};
 window.quickSwitchToManager=function(){if(state.compactDemo){showToast('Завершите демонстрацию официанта или выйдите из сопровождения');return}enterDemoRole('Управляющий')};
 const baseRender=render;
 render=function(){

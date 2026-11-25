@@ -11,7 +11,7 @@ const task=k=>state.assignedTests.find(t=>t.employeeId==='e1'&&t.assignmentType=
 const modal=()=>document.getElementById('modalWrap').classList.contains('open');
 const step=(sel,title,desc,n)=>({sel,title,desc,n});
 function currentStep(){
- const id=state.currentEmployee||'e1',t=state.assignedTests.find(x=>x.employeeId===id&&x.workflowPreparation&&x.block==='Салаты'),a=state.assignedTests.find(x=>x.employeeId===id&&x.assignmentType==='attestation'&&x.block==='Салаты'),m=modal(),r=state.route;
+ const id=state.currentEmployee||'e1',t=state.assignedTests.find(x=>x.employeeId===id&&x.assignedByManager&&x.itemId&&x.assignmentType==='training'&&x.block==='Салаты')||(state.auth==='staff'?state.assignedTests.find(x=>x.employeeId===id&&x.workflowPreparation&&x.block==='Салаты'):null),a=state.assignedTests.find(x=>x.employeeId===id&&x.assignmentType==='attestation'&&x.block==='Салаты'),m=modal(),r=state.route;
  if(r==='roles'){
   if(state.guideManagerDone&&!state.guideStaffDone)return step('.role-card:nth-child(2)','Теперь вы — официант','Задание уже сохранено. Войдите в персональный кабинет и увидите работу системы глазами сотрудника.',1);
   return step('.role-card:first-child','Начнём с управляющего','Вы — управляющий ресторана. Посмотрите, как контролировать продажи, знания команды и стандарты смены. Откройте кабинет.',1)
@@ -31,13 +31,14 @@ function currentStep(){
    return step('.ra-ops-tile[onclick="raOpsChecks()"]','Чек-листы подразделений','Контроль готовности зала и бара: видно, что выполнено, кем и когда.',3)
   }
   if(!t){
+   if(m&&document.querySelector('#modal .ra-dish-choice'))return step('#modal .ra-dish-choice','Выберите салат','Назначьте сотруднику тест по одному конкретному блюду из списка.',6);
    if(r!=='employee-detail')return step('.employee-compact[data-employee-id="e1"]','Рейтинг команды','Общий уровень виден сразу. Откройте сотрудника и найдите раздел, требующий обучения.',4);
    if(!document.querySelector('[data-demo-salads].open'))return step('[data-demo-salads] .knowledge-row','Диагностика знаний','Откройте раздел «Салаты». Управляющий видит знания по каждому разделу.',5);
-   return step('[data-demo-salads] [data-assign-group]','Назначение теста','Назначьте обучение всему разделу. Официант получит новое задание.',6)
+   return step('[data-demo-salads] button[onclick^="raChooseDish"]','Назначение теста','Нажмите «Тест по блюду» и выберите один салат. Сотрудник получит задание именно по этой позиции.',6)
   }
   if(state.assignedTests.some(x=>x.requestStatus==='requested'))return step('[data-request-assign]','Запрос на аттестацию','Официант изучил весь раздел и подтвердил готовность. Назначьте итоговую проверку.',6);
   if(state.assignedTests.some(x=>x.assignmentType==='attestation'&&x.status==='submitted'))return m?step('[data-review-accept]','Подтверждение','Оцените практические навыки и подтвердите аттестацию. Только после этого меняется рейтинг.',6):step('[data-review-open]','Результат получен','Управляющий принимает или отклоняет результат.',6);
-  return step('#roleBtn','Сценарий управляющего завершён','Вы назначили обучение. Вернитесь к выбору роли: теперь вы — официант. Задание останется в его кабинете.',6)
+  return step('#roleBtn','Сценарий управляющего завершён','Вы назначили тест по блюду «'+(t.itemName||t.block)+'». Перейдите в кабинет официанта, чтобы увидеть это же задание.',6)
  }
  if(state.auth==='staff'){
   if(r==='slow-self-quiz'&&window.raAssignedStudyResume?.()){const q=state.slowSelfQuiz;return step('.quiz-shell',q?.itemId?'Тест по блюду':'Тест по разделу','После проверки вернитесь к списку назначенных блюд. Самостоятельная тренировка не заменяет назначенный тест.',3)}
@@ -49,7 +50,7 @@ function currentStep(){
   if(r==='assigned-attestation-result')return step('.attestation-result .primary','Результат отправлен','Управляющий увидит результат. Ваш рейтинг пока не изменился.',3);
   if(!state.guideRatingSeen)return step('.scorebox','Мой рейтинг','У каждого сотрудника своя история аттестаций. Тренировки помогают подготовиться, но официальный рейтинг меняется только после подтверждения управляющим.',2);
   if(a&&['new','opened'].includes(a.status))return step('.attestation-card .ra-assignment-actions .primary','Назначена аттестация','Пройдите проверку уже изученного раздела.',3);
-  if(t&&!state.guideTrainingAttempt&&t.status!=='done')return t.materialReviewed?step('[data-prep-quiz],.assigned-test .ra-assignment-actions .primary','Тест по салатам','Материал изучен. Пройдите тренировочную проверку.',3):step('.assigned-test .ra-assignment-actions .ghost','Новое задание','Это то самое задание, которое вы только что назначили управляющим. Оно уже в кабинете официанта. Откройте раздел «Салаты».',3);
+  if(t&&!state.guideTrainingAttempt&&t.status!=='done')return t.materialReviewed?step('[data-prep-quiz],.assigned-test .ra-assignment-actions .primary','Тест по салатам','Материал изучен. Пройдите тренировочную проверку.',3):step('.assigned-test .ra-assignment-actions .ghost','Новое задание','Это то самое задание, которое вы только что назначили управляющим: «'+(t.itemName||t.block)+'». Откройте материал.',3);
   if(!state.guideAssignmentPreview&&t?.score===100&&!t.requestStatus&&document.querySelector('[data-prep-request]'))return step('[data-prep-request]','Готов к аттестации','Вы сдали тренировочный тест на 100%. Нажмите кнопку готовности: управляющий получит запрос и назначит итоговую аттестацию. До подтверждения рейтинг не меняется.',4);
   if(r==='slow-self-quiz'){
     const q=state.slowSelfQuiz;
@@ -145,7 +146,7 @@ function staffLearningNote(surface,s){
  const singleDish=assigned&&!!window.raGuideDishPreview?.(state.assignedTests.find(t=>t.id===state.studyAssignmentId));
  let title=s.title,desc=s.desc,action=null,group=null;
  if(list){
-  if(singleDish){title='Выберите один салат';desc='Вы видите весь раздел, назначенный управляющим. Для знакомства с системой изучите только одно блюдо. Откройте любой салат.';action=surface.querySelector('.ra-dish-open')}
+  if(singleDish){title='Задание управляющего';desc='Управляющий назначил один салат. В списке видны все позиции, а выделено именно назначенное блюдо. Откройте его и подготовьтесь к тесту.';action=surface.querySelector('[data-demo-assigned-dish]')||surface.querySelector('.ra-dish-open')}
   else if(assigned&&blockReady){title='Материал изучен';desc='Все позиции изучены. Теперь пройдите назначенный тест по разделу. Отдельные тренировки можно повторять.';action=blockReady}
   else{title=assigned?'Изучите назначенный раздел':'Самостоятельное обучение';desc=assigned?'Управляющий назначил весь раздел. Откройте любое блюдо: здесь есть всё для уверенной рекомендации гостю. Затем отметьте изучение или проверьте себя.':'Вся база меню доступна без назначения. Здесь можно открыть любое '+area+' или проверить знания раздела. Мы уже показали механизм теста — продолжите демонстрацию.';action=nextDish||surface.querySelector('.ra-dish-open')}
  }else if(studying&&singleDish){title='Подготовьтесь к тесту';desc='Внимательно изучите состав блюда, потому что впереди тест. Изучите скрипт продажи, цену, выход и вкусные слова. Затем ответьте на пять вопросов.';action=surface.querySelector('.ra-study-actions .primary')}
@@ -302,11 +303,11 @@ if(reveal){
   }
  }
 }
-const report=modal()&&el.matches('#modal .closebtn'),panel=report?document.getElementById('modal'):pinMode?document.getElementById('pinPanel'):null;
+const report=modal()&&el.matches('#modal .closebtn'),dishPicker=modal()&&state.auth==='manager'&&el.matches('.ra-dish-choice'),panel=report||dishPicker?document.getElementById('modal'):pinMode?document.getElementById('pinPanel'):null;
 const g=innerWidth>=768?120:82,vh=modal()?viewportBottom:Math.min(viewportBottom,safeBottom),vw=innerWidth;
 let panelRect=panel?.getBoundingClientRect();
 const side=panelRect?Math.max(panelRect.left-g-16,vw-panelRect.right-g-16):0;
-const inline=!!panel&&side<235;
+const inline=!!panel&&(dishPicker||side<235);
 card.classList.toggle('ra-guide-inline',inline);
 if(inline){if(card.parentElement!==panel)panel.prepend(card);card.style.width='';card.style.left='';card.style.top=''}
 else{if(card.parentElement!==document.body)document.body.append(card);card.style.width=panelRect?Math.min(330,side)+'px':''}
@@ -367,7 +368,8 @@ const allowed=(target?.isConnected&&target.contains(e.target))||(surface&&surfac
 const modalClose=modal()&&e.target.closest('#modal .closebtn');
 const pinBack=pinModeRoute()&&e.target.closest('.pin-back');
 const menuChoice=state.route==='learn'&&!modal()&&e.target.closest('.toolbar .chip,#menuBlock .menu-card,#menuBlock [data-self-block],#menuBlock [data-dish-test],.head button,.ra-assigned-menu button');
-if(!allowed&&!modalClose&&!pinBack&&!menuChoice){e.preventDefault();e.stopImmediatePropagation();return}
+const dishChoice=state.auth==='manager'&&modal()&&e.target.closest('#modal .ra-dish-choice');
+if(!allowed&&!modalClose&&!pinBack&&!menuChoice&&!dishChoice){e.preventDefault();e.stopImmediatePropagation();return}
 const s=currentStep();if(!s)return;
 const m=modal(),close=e.target.closest('#modal .closebtn'),mgr=state.auth==='manager',staff=state.auth==='staff';
 if(mgr&&s.n===2&&m&&close)state.guideSales=true;
@@ -390,7 +392,7 @@ window.addEventListener('pageshow',()=>{schedule();setTimeout(schedule,180)});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){schedule();setTimeout(schedule,180)}});
 window.addEventListener('ra-intro-change',schedule);window.addEventListener('resize',schedule);window.addEventListener('scroll',schedule,true);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);
 const ae=activeEmployees;activeEmployees=function(){return ae().filter(e=>!guided()||e.role!=='Бармен')};
-const base=render;render=function(){recoverHandoff();base();if(guided()){remember();if(state.auth==='staff'&&state.route==='home'&&!state.assignedTests.some(x=>x.employeeId===current().id&&x.workflowPreparation&&x.block==='Салаты')){raAssignGroup(current().id,'kitchen',encodeURIComponent('Салаты'),true)}}schedule()};
+const base=render;render=function(){recoverHandoff();base();if(guided()){remember();}schedule()};
 const om=openModal,cm=closeModal;openModal=function(){om.apply(this,arguments);schedule()};closeModal=function(){cm.apply(this,arguments);schedule()};
 const reset=window.restartAcademyTour;
 window.restartAcademyTour=async function(){clearHandoff();state.compactDemo=true;state.compactVersion=9;views=[];state.shiftChecks={};state.miniTrainingRead={};['guideSales','guideHall','guideHallClosed','guideManagerCheck','guideCheckedBar','guideCheckedManager','guideManagerDone','guideStaffDone','guideRatingSeen','guideTrainingAttempt','guideAssignmentPreview','guideSelfSeen','guideBarSeen','guideMini','guideSchedule','guidePay'].forEach(k=>state[k]=false);lastKey='';await reset();schedule()};

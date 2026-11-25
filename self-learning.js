@@ -25,7 +25,7 @@ const selfRender=renderStaff;
 renderStaff=function(){
  const q=state.slowSelfQuiz;
  if(state.route!=='slow-self-quiz'||!q||q.index<q.questions.length)return selfRender();
- if(q.guidedDishPreview)return '<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Демонстрационный тест · завершён</div><div class="result-circle"><strong>'+q.score+'/'+q.questions.length+'</strong></div><h1>'+esc(q.label)+'</h1><p>Отлично! Вы прошли пять вопросов с подсказками.</p><p>В обычном режиме официант отвечает самостоятельно. Для готовности к аттестации необходимо изучить весь назначенный раздел и пройти тест на 100%. Демонстрационный результат не влияет на рейтинг.</p><button class="primary" data-demo-dish-next onclick="raFinishDishPreview()">Продолжить демонстрацию</button></div></section>';
+ if(q.guidedDishPreview)return '<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Демонстрационный тест · завершён</div><div class="result-circle"><strong>'+q.score+'/'+q.questions.length+'</strong></div><h1>'+esc(q.label)+'</h1><p>Отлично! Вы прошли пять вопросов с подсказками.</p><p>В обычном режиме официант отвечает самостоятельно. В обычном режиме управляющий получает результат назначенного теста. Демонстрационный результат не влияет на рейтинг.</p><button class="primary" data-demo-dish-next onclick="raFinishDishPreview()">Продолжить демонстрацию</button></div></section>';
  pass(q);
  const p=state.assignedTests.find(t=>t.id===q.preparationId),score=Math.round(q.score/q.questions.length*100);
  const request=p&&score===100&&!['requested','assigned','accepted'].includes(p.requestStatus);
@@ -50,7 +50,7 @@ blockHTML=function(area,block){
 window.raAssignedStudyResume=()=>state.resumeStudyAssignmentId;
 window.raStudySelfTest=function(id){
  const x=findMenu(id),t=state.assignedTests.find(t=>t.id===state.studyAssignmentId);
- if(!x||!t||t.employeeId!==current().id)return;
+ if(!x||!t||t.employeeId!==current().id||(t.itemId&&t.itemId!==id))return;
  const preview=window.raGuideDishPreview?.(t);
  state.resumeStudyAssignmentId=t.id;closeModal();state.studyAssignmentId=null;save();
  startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name),preview)

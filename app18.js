@@ -103,7 +103,13 @@
     const t=pendingAssignment(state.studyAssignmentId);
     if(!t||t.employeeId!==current().id)return oldLearn();
     const st=studyStatus(t),seen=reviewFor(t).reviewedIds;
-    if(window.raGuideDishPreview(t))return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.block)+'</h2><p>Все позиции раздела. Для демонстрации достаточно одного блюда.</p></div></div><section class="ra-assigned-menu" data-guide-single-dish><div class="ra-dish-list">'+st.items.map(x=>'<div class="ra-dish-row"><button class="ra-dish-open" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>Открыть карточку</small></span><span class="ra-dish-chevron">›</span></button></div>').join('')+'</div></section>';
+    if(window.raGuideDishPreview(t)){
+      const xs=STOCK[t.area].filter(x=>x.block===t.block);
+      return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.block)+'</h2><p>Назначено: '+esc(t.itemName||t.block)+'</p></div></div><section class="ra-assigned-menu" data-guide-single-dish><div class="ra-dish-list">'+xs.map(x=>{
+        const selected=!t.itemId||x.id===t.itemId;
+        return '<div class="ra-dish-row"><button class="ra-dish-open" '+(selected?'data-demo-assigned-dish onclick="openMenu(\''+x.id+'\')"':'disabled')+'>'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+(selected?'Назначено · открыть карточку':'В разделе')+'</small></span><span class="ra-dish-chevron">›</span></button></div>'
+      }).join('')+'</div></section>';
+    }
     return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.itemName||t.block)+'</h2><p>Выберите блюдо, изучите карточку и вернитесь к списку.</p></div><button class="ghost" onclick="raStudyListBack()">← В кабинет</button></div><section class="ra-assigned-menu"><div class="ra-study-progress"><b>Изучено '+st.done+' из '+st.total+'</b><div class="ra-study-progress-track"><i style="width:'+Math.round(st.done/st.total*100)+'%"></i></div></div><div class="ra-dish-list">'+st.items.map(x=>'<div class="ra-dish-row" data-unread="'+(seen.includes(x.id)?'0':'1')+'"><button class="ra-dish-open" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+ (seen.includes(x.id)?'Изучено':'Открыть карточку')+'</small></span><span class="ra-dish-chevron">›</span></button><button class="ghost" onclick="raStudySelfTest(\''+x.id+'\')">Тест по блюду</button></div>').join('')+'</div><div class="ra-assignment-footer"><button class="primary" data-study-block-test '+(st.completed?'':'disabled')+' onclick="finishStudyMaterial()">'+(t.assignmentType==='attestation'?'Начать аттестацию':t.itemId?'Начать назначенный тест':'Тест по всему разделу')+'</button></div><p class="ra-study-hint">'+(st.completed?'Все позиции изучены. Можно пройти назначенный тест.':'Для назначенного теста отметьте все позиции изученными.')+'</p></section>'
   };
   const originalOpenMenu=openMenu;
@@ -154,7 +160,7 @@
     let html='';
     function assignedRow(t,isAttestation){
       const s=studyStatus(t);
-      const label=isAttestation?'АТТЕСТАЦИЯ':t.workflowPreparation?(t.assignedByManager?'ОТ УПРАВЛЯЮЩЕГО':t.demoExample?'ПРИМЕР ЗАДАНИЯ':'САМОСТОЯТЕЛЬНАЯ ПОДГОТОВКА'):'ТРЕНИРОВКА';
+      const label=isAttestation?'АТТЕСТАЦИЯ':t.assignedByManager?'ОТ УПРАВЛЯЮЩЕГО':t.workflowPreparation?(t.demoExample?'ПРИМЕР ЗАДАНИЯ':'САМОСТОЯТЕЛЬНАЯ ПОДГОТОВКА'):'ТРЕНИРОВКА';
       const allRead=s.completed;
       const action=isAttestation?'openAssignedAttestation':'openAssignedTest';
       const title=isAttestation?'Начать аттестацию':'Начать тест';

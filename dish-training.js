@@ -4,7 +4,7 @@ if(state.auth!=='manager')return;
 const block=decodeURIComponent(enc),xs=STOCK[area].filter(x=>x.block===block);
 openModal('<div class="modal-head"><h2>Тест по блюду</h2><button class="closebtn" onclick="closeModal()">×</button></div>'+xs.map(x=>'<button class="ghost ra-dish-choice" data-dish="'+esc(x.id)+'">'+esc(x.name)+'</button>').join(''));
 document.querySelectorAll('.ra-dish-choice').forEach(b=>b.onclick=()=>{const x=xs.find(v=>v.id===b.dataset.dish);if(!x)return;if(state.assignedTests.some(t=>t.employeeId===id&&t.itemId===x.id&&t.assignmentType!=='attestation'&&t.status!=='done')){showToast('Тест уже назначен');return}
-const t={id:'dish_'+Date.now(),employeeId:id,area,block,itemId:x.id,itemName:x.name,scope:'item',assignmentType:'training',presentation:!!state.demoRunId,status:'new',createdAt:today(),managerSeen:false};
+const t={id:'dish_'+Date.now(),employeeId:id,area,block,itemId:x.id,itemName:x.name,scope:'item',assignmentType:'training',assignedByManager:true,presentation:!!state.demoRunId,status:'new',createdAt:today(),managerSeen:false};
 if(!buildDemoQuestions(t).length){showToast('Нет вопросов по блюду');return}
 state.assignedTests.push(t);state.demoHandoff={employeeId:id,stage:'manager'};closeModal();save();render();showToast('Тест назначен: '+x.name);});
 };
