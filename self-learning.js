@@ -25,7 +25,7 @@ const selfRender=renderStaff;
 renderStaff=function(){
  const q=state.slowSelfQuiz;
  if(state.route!=='slow-self-quiz'||!q||q.index<q.questions.length)return selfRender();
- if(q.guidedDishPreview)return '<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Демонстрационный тест · завершён</div><div class="result-circle"><strong>'+q.score+'/'+q.questions.length+'</strong></div><h1>'+esc(q.label)+'</h1><p>Отлично! Вы прошли пять вопросов с подсказками.</p><p>В обычном режиме официант отвечает самостоятельно. В обычном режиме управляющий получает результат назначенного теста. Демонстрационный результат не влияет на рейтинг.</p><button class="primary" data-demo-dish-next onclick="raFinishDishPreview()">Продолжить демонстрацию</button></div></section>';
+ if(q.guidedDishPreview)return '<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Демонстрационный тест · завершён</div><div class="result-circle"><strong>'+q.score+'/'+q.questions.length+'</strong></div><h1>'+esc(q.label)+'</h1><p>Отлично! Вы прошли пять вопросов с подсказками.</p><p>Результат будет виден управляющему с пометкой «демо с подсказками». В обычном режиме официант отвечает самостоятельно. Рейтинг не изменится.</p><button class="primary" data-demo-dish-next onclick="raFinishDishPreview()">Продолжить демонстрацию</button></div></section>';
  pass(q);
  const p=state.assignedTests.find(t=>t.id===q.preparationId),score=Math.round(q.score/q.questions.length*100);
  const request=p&&score===100&&!['requested','assigned','accepted'].includes(p.requestStatus);
@@ -51,12 +51,18 @@ window.raAssignedStudyResume=()=>state.resumeStudyAssignmentId;
 window.raStudySelfTest=function(id){
  const x=findMenu(id),t=state.assignedTests.find(t=>t.id===state.studyAssignmentId);
  if(!x||!t||t.employeeId!==current().id||(t.itemId&&t.itemId!==id))return;
+ if(t.itemId&&!window.raGuideDishPreview?.(t))return window.raStartAssignedDish(id);
  const preview=window.raGuideDishPreview?.(t);
  state.resumeStudyAssignmentId=t.id;closeModal();state.studyAssignmentId=null;save();
  startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name),preview)
 };
 window.raFinishDishPreview=function(){
  const q=state.slowSelfQuiz;if(!q?.guidedDishPreview||q.index<q.questions.length)return;
+ const t=state.assignedTests.find(t=>t.id===state.resumeStudyAssignmentId&&t.employeeId===current().id&&t.itemId===q.itemId);
+ if(t&&t.status!=='done'){
+  Object.assign(t,{status:'done',guidedPreview:true,correct:q.score,total:q.questions.length,score:Math.round(q.score/q.questions.length*100),completedAt:today()+' '+testTime(),managerSeen:false});
+  state.testResults.push({testId:t.id,employeeId:t.employeeId,area:t.area,block:t.block,itemId:t.itemId,correct:t.correct,total:t.total,score:t.score,completedAt:t.completedAt,source:'guided-preview',guidedPreview:true});
+ }
  state.guideAssignmentPreview=true;state.guideTrainingAttempt=true;state.resumeStudyAssignmentId=null;state.slowSelfQuiz=null;state.studyAssignmentId=null;state.route='home';save();render();
  (window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})
 };
@@ -67,6 +73,14 @@ window.raSelfReturn=function(){
 };
 const rawRequest=window.raSelfRequest;
 window.raSelfRequest=function(){const id=state.resumeStudyAssignmentId;rawRequest();if(id&&state.route==='learn'){state.resumeStudyAssignmentId=null;studyAssignmentMaterial(id)}};
+const startIndependent=window.startSelfSlowQuiz;
+window.startSelfSlowQuiz=startSelfSlowQuiz=function(area,block,itemId,label,preview=false){
+ if(state.auth==='staff'&&!state.compactDemo&&!preview&&itemId){
+  const t=state.assignedTests.find(t=>t.employeeId===current().id&&t.itemId===itemId&&t.assignedByManager&&t.assignmentType==='training'&&['new','opened'].includes(t.status));
+  if(t){showToast('По этому блюду назначен тест управляющего');return studyAssignmentMaterial(t.id)}
+ }
+ return startIndependent(area,block,itemId,label,preview)
+};
 const listBlock=blockHTML;
 blockHTML=function(area,block){
  const box=document.createElement('div');box.innerHTML=listBlock(area,block);

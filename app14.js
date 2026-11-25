@@ -4,6 +4,13 @@
   STOCK.kitchen.splice(0,STOCK.kitchen.length,...D.kitchen.items);
   STOCK.bar.splice(0,STOCK.bar.length,...D.bar.items);
 
+  const seedBlocks={a1:'Холодные закуски',a3:'Классические коктейли',a4:'Холодные закуски',a5:'Горячие блюда',a7:'Классические коктейли',a8:'Классические коктейли',a9:'Авторские коктейли',a11:'Холодные закуски',a12:'Классические коктейли'};
+  for(const employees of [window.RA_DEMO_BASE_EMPLOYEES,state.employees]){
+    for(const e of employees||[])for(const a of e.attestations||[]){
+      if(seedBlocks[a.id]&&!STOCK[a.area]?.some(x=>x.block===a.block)){a.block=seedBlocks[a.id];a.demoSeed=true}
+    }
+  }
+  save();
   blocksFor=function(area){return [...new Set((STOCK[area]||[]).map(x=>x.block).filter(Boolean))]};
 
   function normalizeQ(q){

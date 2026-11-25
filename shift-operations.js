@@ -2,7 +2,10 @@
 const lists=window.RAShiftLists,roles={hall:'Зал',bar:'Бар'};
 const role=()=>state.auth==='manager'?'hall':current()?.role==='Бармен'?'bar':'hall';
 const book=()=>{state.shiftChecks ||= {};const d=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Moscow'}).format(new Date());return state.shiftChecks[d] ||= {}};
-const items=k=>lists[k].sections.flatMap((s,i)=>s.items.map((x,j)=>k+'-'+i+'-'+j));
+const highlights={hall:[[0,1],[0,2],[0,6],[0,12],[1,6],[2,6]],bar:[[0,2],[0,4],[0,6],[0,8],[1,7],[2,7]]};
+const allRows=k=>lists[k].sections.flatMap((s,i)=>s.items.map((x,j)=>({id:k+'-'+i+'-'+j,x,i,j})));
+const visibleRows=k=>state.compactDemo?highlights[k].map(([i,j])=>({id:k+'-'+i+'-'+j,x:lists[k].sections[i].items[j],i,j})):allRows(k);
+const items=k=>visibleRows(k).map(r=>r.id);
 const count=k=>items(k).filter(id=>book()[id]).length+'/'+items(k).length;
 const tile=(a,b,c,d)=>'<button class="ra-ops-tile" onclick="'+d+'"><span>'+a+'</span><strong>'+b+'</strong><small>'+c+'</small></button>';
 const money=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
@@ -20,7 +23,8 @@ window.raOpsChecks=function(k=state.auth==='manager'?'hall':role()){
 if(!allowed(k))return;
 let h=state.auth==='manager'?Object.keys(roles).map(r=>'<button class="ghost" data-shift-role="'+r+'">'+roles[r]+' '+count(r)+'</button>').join(' '):'';
 h+='<h3>'+roles[k]+' · '+count(k)+'</h3>';
-h+=lists[k].sections.map((s,i)=>'<details class="ra-check-phase" '+(i===0?'open':'')+'><summary>'+esc(s.title)+'</summary>'+s.items.map((x,j)=>{const id=k+'-'+i+'-'+j,v=book()[id];return '<label class="ra-check-item"><input type="checkbox" data-shift-id="'+id+'" '+(v?'checked ':'')+(writable(k)?'':'disabled')+'><span>'+esc(x.text)+(x.time?'<small>'+esc(x.time)+'</small>':'')+(x.note?'<small>'+esc(x.note)+'</small>':'')+(v?'<small>'+esc(v.name)+' · '+esc(v.time)+'</small>':'')+'</span></label>'}).join('')+'</details>').join('');
+const row=({id,x})=>{const v=book()[id];return '<label class="ra-check-item"><input type="checkbox" data-shift-id="'+id+'" '+(v?'checked ':'')+(writable(k)?'':'disabled')+'><span>'+esc(x.text)+(x.time?'<small>'+esc(x.time)+'</small>':'')+(x.note?'<small>'+esc(x.note)+'</small>':'')+(v?'<small>'+esc(v.name)+' · '+esc(v.time)+'</small>':'')+'</span></label>'};
+h+=state.compactDemo?'<p>Пример ключевых задач смены.</p><div class="ra-check-phase">'+visibleRows(k).map(row).join('')+'</div>':lists[k].sections.map((s,i)=>'<details class="ra-check-phase" '+(i===0?'open':'')+'><summary>'+esc(s.title)+'</summary>'+allRows(k).filter(r=>r.i===i).map(row).join('')+'</details>').join('');
 modal('Чек-листы',h);
 const m=document.getElementById('modal');
 m.querySelectorAll('[data-shift-role]').forEach(b=>b.onclick=()=>raOpsChecks(b.dataset.shiftRole));

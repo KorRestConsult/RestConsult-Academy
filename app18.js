@@ -12,7 +12,7 @@
     const r=rating(e,area,b),n=atts(e,area,b).length,key=knowledgeKey(area,b),open=state.expandedKnowledgeKey===key,enc=encodeURIComponent(b),
       sent=sentTestExists(e.id,area,b),attSent=sentAttestationExists(e.id,area,b),lastTest=latestCompletedTest(e.id,area,b);
     let desc=n?(n+' '+(n===1?'аттестация':'аттестации')+(r?' · результат внутренней проверки '+r+'%':'')):'Аттестаций пока нет';
-    if(lastTest)desc+=' · тренировка '+lastTest.correct+' из '+lastTest.total;
+    if(lastTest)desc+=' · '+(lastTest.guidedPreview?'демо с подсказками ':'тренировка ')+lastTest.correct+' из '+lastTest.total;
     const demoDish=area==='kitchen'&&b==='Горячие закуски'&&e.id==='e1';
     const actionText='Аттестация блока';
     const extra='';
@@ -27,14 +27,14 @@
       '<div class="ra-area-scales"><div class="card">'+scaleHTML(kr,'Кухня')+'</div><div class="card">'+scaleHTML(br,'Бар')+'</div></div>'+
       '<div class="knowledge-grid"><div class="knowledge-card"><div class="knowledge-head"><h3>Кухня</h3><strong>'+ (kr?kr+'%':'—') +'</strong></div><div class="knowledge-list">'+knowledgeRows(e,'kitchen')+'</div></div><div class="knowledge-card"><div class="knowledge-head"><h3>Бар</h3><strong>'+ (br?br+'%':'—') +'</strong></div><div class="knowledge-list">'+knowledgeRows(e,'bar')+'</div></div></div></section>'+
       '<section class="section section-lined"><div class="section-title"><span>02</span><div><h2>Тренировочные тесты</h2><p>Тренировка показывает знания, но не меняет рейтинг</p></div></div>'+managerTrainingResults(e)+'</section>'+
-      '<section class="section section-lined"><div class="section-title"><span>03</span><div><h2>История аттестаций</h2><p>Только внутренние итоговые аттестации формируют шкалы выше</p></div></div>'+employeeHistory(e)+'</section>'+
+      '<section class="section section-lined"><div class="section-title"><span>03</span><div><h2>История аттестаций</h2><p>Демонстрационная история. Только итоговые аттестации формируют шкалы выше</p></div></div>'+employeeHistory(e)+'</section>'+
       '<section class="section section-lined"><div class="settings-strip"><div><b>Настройки сотрудника</b><small>Редко используемые действия</small></div><div class="settings-actions"><button class="ghost" onclick="openEmployeeForm(\''+e.id+'\')">Редактировать</button><button class="ghost" onclick="openPinReset(\''+e.id+'\')">Сменить PIN</button><button class="danger" onclick="archiveEmployee(\''+e.id+'\')">Архивировать</button></div></div></section>';
   };
 
   managerTrainingResults=function(e){
     const rows=completedTestsFor(e.id);
     if(!rows.length)return '<div class="empty">Тренировочных тестов пока нет.</div>';
-    return '<div class="test-results-card">'+rows.slice(0,8).map(t=>'<div class="test-result-row"><div><b>'+esc(t.itemName||t.block)+'</b><small>'+(t.area==='kitchen'?'Кухня':'Бар')+' · '+esc(t.completedAt||'')+' · тренировка</small></div><div class="test-result-score"><b>'+t.correct+' из '+t.total+'</b><small>'+t.score+'%</small></div></div>').join('')+'</div>';
+    return '<div class="test-results-card">'+rows.slice(0,8).map(t=>'<div class="test-result-row"><div><b>'+esc(t.itemName||t.block)+'</b><small>'+(t.area==='kitchen'?'Кухня':'Бар')+' · '+esc(t.completedAt||'')+' · '+(t.guidedPreview?'демо с подсказками':'тренировка')+'</small></div><div class="test-result-score"><b>'+t.correct+' из '+t.total+'</b><small>'+t.score+'%</small></div></div>').join('')+'</div>';
   };
 
   // 2) A block attestation requires reviewing EVERY item in that block.
@@ -92,6 +92,12 @@
     t.materialReviewed=studyStatus(t).completed;closeModal();save();render()
   };
   window.markStudyItemAndNext=function(id){raStudyRead(id,true)};
+  window.raStartAssignedDish=function(id){
+    const t=pendingAssignment(state.studyAssignmentId);
+    if(state.auth!=='staff'||!t||t.employeeId!==current().id||t.itemId!==id||t.status==='done')return;
+    if(!reviewFor(t).reviewedIds.includes(id))reviewFor(t).reviewedIds.push(id);
+    t.materialReviewed=studyStatus(t).completed;save();finishStudyMaterial()
+  };
   window.finishStudyMaterial=function(){
     const t=pendingAssignment(state.studyAssignmentId);if(!t||!studyStatus(t).completed)return;
     t.materialReviewed=true;state.studyAssignmentId=null;closeModal();state.route='home';save();render();
@@ -110,34 +116,33 @@
         return '<div class="ra-dish-row"><button class="ra-dish-open" '+(selected?'data-demo-assigned-dish onclick="openMenu(\''+x.id+'\')"':'disabled')+'>'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+(selected?'Назначено · открыть карточку':'В разделе')+'</small></span><span class="ra-dish-chevron">›</span></button></div>'
       }).join('')+'</div></section>';
     }
-    return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.itemName||t.block)+'</h2><p>Выберите блюдо, изучите карточку и вернитесь к списку.</p></div><button class="ghost" onclick="raStudyListBack()">← В кабинет</button></div><section class="ra-assigned-menu"><div class="ra-study-progress"><b>Изучено '+st.done+' из '+st.total+'</b><div class="ra-study-progress-track"><i style="width:'+Math.round(st.done/st.total*100)+'%"></i></div></div><div class="ra-dish-list">'+st.items.map(x=>'<div class="ra-dish-row" data-unread="'+(seen.includes(x.id)?'0':'1')+'"><button class="ra-dish-open" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+ (seen.includes(x.id)?'Изучено':'Открыть карточку')+'</small></span><span class="ra-dish-chevron">›</span></button><button class="ghost" onclick="raStudySelfTest(\''+x.id+'\')">Тест по блюду</button></div>').join('')+'</div><div class="ra-assignment-footer"><button class="primary" data-study-block-test '+(st.completed?'':'disabled')+' onclick="finishStudyMaterial()">'+(t.assignmentType==='attestation'?'Начать аттестацию':t.itemId?'Начать назначенный тест':'Тест по всему разделу')+'</button></div><p class="ra-study-hint">'+(st.completed?'Все позиции изучены. Можно пройти назначенный тест.':'Для назначенного теста отметьте все позиции изученными.')+'</p></section>'
+    return '<div class="head"><div><div class="kicker">Задание от управляющего</div><h2>'+esc(t.itemName||t.block)+'</h2><p>Выберите блюдо, изучите карточку и вернитесь к списку.</p></div><button class="ghost" onclick="raStudyListBack()">← В кабинет</button></div><section class="ra-assigned-menu"><div class="ra-study-progress"><b>Изучено '+st.done+' из '+st.total+'</b><div class="ra-study-progress-track"><i style="width:'+Math.round(st.done/st.total*100)+'%"></i></div></div><div class="ra-dish-list">'+st.items.map(x=>'<div class="ra-dish-row" data-unread="'+(seen.includes(x.id)?'0':'1')+'"><button class="ra-dish-open" onclick="openMenu(\''+x.id+'\')">'+(x.photo?'<img loading="lazy" src="'+esc(x.photo)+'" alt="">':'')+'<span><b>'+esc(x.name)+'</b><small>'+esc(x.price||'—')+' · '+esc(x.weight||x.volume||'—')+'</small><small>'+ (seen.includes(x.id)?'Изучено':'Открыть карточку')+'</small></span><span class="ra-dish-chevron">›</span></button><button class="ghost" onclick="'+(t.itemId?'raStartAssignedDish':'raStudySelfTest')+'(\''+x.id+'\')">'+(t.itemId?'Назначенный тест':'Тест по блюду')+'</button></div>').join('')+'</div><div class="ra-assignment-footer"><button class="primary" data-study-block-test '+(st.completed?'':'disabled')+' onclick="finishStudyMaterial()">'+(t.assignmentType==='attestation'?'Начать аттестацию':t.itemId?'Начать назначенный тест':'Тест по всему разделу')+'</button></div><p class="ra-study-hint">'+(st.completed?'Все позиции изучены. Можно пройти назначенный тест.':'Для назначенного теста отметьте все позиции изученными.')+'</p></section>'
   };
   const originalOpenMenu=openMenu;
   openMenu=function(id){
     const x=findMenu(id);if(!x)return;
     const bar=x.area==='bar';
     const t=state.studyAssignmentId&&pendingAssignment(state.studyAssignmentId);
-    const inAssignedBlock=t&&x.area===t.area&&x.block===t.block&&(!t.itemId||x.id===t.itemId);
+    const inAssignedBlock=t&&t.employeeId===current().id&&x.area===t.area&&x.block===t.block&&(!t.itemId||x.id===t.itemId);
     const preview=inAssignedBlock&&window.raGuideDishPreview(t);
     const s=inAssignedBlock?studyStatus(t):null;
     const index=inAssignedBlock?s.items.findIndex(item=>item.id===x.id):-1;
     const facts=[
       ['Описание',x.desc||'—'],
       ['Цена',x.price||'—'],
-      [bar?'Объём':'Вес',x.volume||x.weight||'—'],
+      [bar?'Объём':x.weightReviewNote?'Вес · демо':'Вес',x.volume||x.weight||'—'],
       ['Состав',x.ingredients||'—'],
       ['Вкусные слова',x.taste||x.meta||'—'],
       ['Скрипт продаж',x.salesScript||x.desc||'—'],
       ['Техника продаж / сервис',x.salesTechnique||'—'],
-      ...(x.meta?[['Характеристики',x.meta]]:[]),
-      ...(x.weightReviewNote?[['Примечание к выходу',x.weightReviewNote]]:[])
+      ...(x.meta?[['Характеристики',x.meta]]:[])
     ];
     const studyInfo=inAssignedBlock&&!preview?
       '<div class="ra-study-progress"><b>'+(t.itemId?'Изучение блюда «'+esc(x.name)+'»':'Изучение блока «'+esc(t.block)+'»')+'</b><span>'+(t.itemId?'Одна позиция · затем проверка по ней':'Блюдо '+(index+1)+' из '+s.total+' · просмотрено '+s.done)+'</span><div class="ra-study-progress-track"><i style="width:'+(s.done/s.total*100)+'%"></i></div></div>':'';
     const description=preview?'Изучите карточку. Затем — пять вопросов по выбранному блюду.':inAssignedBlock?
       (t.itemId?'Изучите «'+x.name+'». Затем пройдёте короткую проверку только по этому блюду.':'Изучите блюдо и вернитесь к списку. Можно проверять знания по каждой позиции отдельно.'):
       'Изучите позицию и проверьте знания тренировочным тестом.';
-    const action=preview?'<button class="ghost" onclick="closeModal()">← К списку</button><button class="primary" onclick="raStudySelfTest(\''+x.id+'\')">Начать тест · 5 вопросов</button>':inAssignedBlock?
+    const action=preview?'<button class="ghost" onclick="closeModal()">← К списку</button><button class="primary" onclick="raStudySelfTest(\''+x.id+'\')">Начать тест · 5 вопросов</button>':inAssignedBlock&&t.itemId?'<button class="ghost" onclick="closeModal()">← К списку</button><button class="primary" onclick="raStartAssignedDish(\''+x.id+'\')">Начать назначенный тест</button>':inAssignedBlock?
       '<button class="ghost" onclick="raStudyRead(\''+x.id+'\',false)">← К списку</button><button class="primary" onclick="raStudyRead(\''+x.id+'\')">Изучено · к списку</button><button class="ghost" onclick="raStudySelfTest(\''+x.id+'\')">Тест по блюду</button>':
       '<button class="ghost" onclick="closeModal()">← К списку</button><button class="primary" onclick="closeModal();startSelfSlowQuiz(\''+x.area+'\',\''+encodeURIComponent(x.block)+'\',\''+x.id+'\',\''+encodeURIComponent(x.name)+'\')">Пройти тест по блюду</button>';
     openModal('<div class="modal-head"><div><div class="kicker">'+(bar?'Бар':'Кухня')+' · '+esc(x.block)+'</div><h2>'+esc(x.name)+'</h2><p>'+esc(description)+'</p></div><button class="closebtn" onclick="closeModal()">×</button></div>'+
@@ -188,7 +193,7 @@
   // Guard official assessment: in the sales demo the buyer must see learning before control.
   const rawOpenAttestation=window.openAssignedAttestation;
   window.openAssignedAttestation=function(id){
-    const t=pendingAssignment(id);if(!t)return;
+    const t=pendingAssignment(id);if(state.auth!=='staff'||!t||t.employeeId!==current().id||t.status==='done')return;
     if(!studyStatus(t).completed){
       t.materialReviewed=false;
       showToast('Сначала изучите все позиции блока — затем начнётся аттестация');
@@ -199,7 +204,7 @@
   const rawOpenTest=window.openAssignedTest;
   if(typeof rawOpenTest==='function'){
     window.openAssignedTest=function(id){
-      const t=pendingAssignment(id);if(!t)return;
+      const t=pendingAssignment(id);if(state.auth!=='staff'||!t||t.employeeId!==current().id||t.status==='done')return;
       if(!studyStatus(t).completed){showToast('Сначала изучите все позиции блока');studyAssignmentMaterial(id);return}
       return rawOpenTest(id);
     };

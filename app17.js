@@ -4,7 +4,7 @@
     return (state.assignedTests||[]).filter(t=>t.employeeId===id&&t.status!=='done');
   }
   function pendingForRole(role){
-    const ids=new Set((state.employees||[]).filter(e=>e.active!==false&&e.role===role&&(role!=='Официант'||e.id==='e1')).map(e=>e.id));
+    const ids=new Set((state.employees||[]).filter(e=>e.active!==false&&e.role===role&&(!state.compactDemo||role!=='Официант'||e.id==='e1')).map(e=>e.id));
     return (state.assignedTests||[]).filter(t=>ids.has(t.employeeId)&&t.status!=='done');
   }
   function badge(n){return n?'<span class="role-task-badge">'+n+'</span>':''}
@@ -75,7 +75,7 @@
     baseToggleKnowledge(area,encodedBlock);
     if(state.expandedKnowledgeKey){
       const selected=state.expandedKnowledgeKey;
-      setTimeout(()=>{if(state.route==='employee-detail'&&state.expandedKnowledgeKey===selected)window.RAOnboarding?.startKey('employee-actions',true)},180);
+      setTimeout(()=>{if(localStorage.getItem('ra-tour:optout')!=='1'&&state.route==='employee-detail'&&state.expandedKnowledgeKey===selected)window.RAOnboarding?.startKey('employee-actions',true)},180);
     }
   };
 
@@ -113,7 +113,7 @@
     if(created){
       state.demoHandoff={employeeId,stage:'manager'};
       save();render();
-      setTimeout(()=>{if(state.auth==='manager'&&state.demoHandoff?.stage==='manager')window.RAOnboarding?.startKey('handoff-manager',true)},320);
+      setTimeout(()=>{if(localStorage.getItem('ra-tour:optout')!=='1'&&state.auth==='manager'&&state.demoHandoff?.stage==='manager')window.RAOnboarding?.startKey('handoff-manager',true)},320);
     }
   };
 
@@ -126,7 +126,7 @@
     if(created){
       state.demoHandoff={employeeId,stage:'manager'};
       save();render();
-      setTimeout(()=>{if(state.auth==='manager'&&state.demoHandoff?.stage==='manager')window.RAOnboarding?.startKey('handoff-manager',true)},320);
+      setTimeout(()=>{if(localStorage.getItem('ra-tour:optout')!=='1'&&state.auth==='manager'&&state.demoHandoff?.stage==='manager')window.RAOnboarding?.startKey('handoff-manager',true)},320);
     }
   };
 

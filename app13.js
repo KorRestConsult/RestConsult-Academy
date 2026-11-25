@@ -97,7 +97,7 @@ const managerHomeBeforePresentation=managerHome;
 managerHome=function(){
   const unseen=state.assignedTests.filter(t=>t.status==='done'&&!t.managerSeen).sort((a,b)=>String(b.completedAt||'').localeCompare(String(a.completedAt||'')));
   const base=managerHomeBeforePresentation();if(!unseen.length)return base;const t=unseen[0],e=emp(t.employeeId);
-  return `<section class="section"><div class="notification-card"><div class="notification-badge">✓</div><div><div class="meta"><span>НОВЫЙ РЕЗУЛЬТАТ</span><span>·</span><span>${t.area==='kitchen'?'КУХНЯ':'БАР'}</span></div><h3>${esc(e?.name||'Сотрудник')} · ${esc(t.block)}</h3><p>Тест завершён: ${t.correct}/${t.total} · рейтинг не изменён</p></div><button class="primary" onclick="openCompletedTestResult('${t.id}')">Посмотреть</button></div></section>${base}`
+  return `<section class="section"><div class="notification-card"><div class="notification-badge">✓</div><div><div class="meta"><span>${t.guidedPreview?'ДЕМО С ПОДСКАЗКАМИ':'НОВЫЙ РЕЗУЛЬТАТ'}</span><span>·</span><span>${t.area==='kitchen'?'КУХНЯ':'БАР'}</span></div><h3>${esc(e?.name||'Сотрудник')} · ${esc(t.itemName||t.block)}</h3><p>Тест завершён: ${t.correct}/${t.total} · рейтинг не изменён</p></div><button class="primary" onclick="openCompletedTestResult('${t.id}')">Посмотреть</button></div></section>${base}`
 }
 function openCompletedTestResult(id){const t=state.assignedTests.find(x=>x.id===id);if(!t)return;t.managerSeen=true;save();openEmployeePage(t.employeeId)}
 

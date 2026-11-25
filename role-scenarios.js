@@ -43,22 +43,36 @@ roleCards=function(){
  box.querySelector('.role-grid')?.classList.add('ra-demo-role-grid');
  return box.innerHTML
 };
-function enterDemoRole(role){
+function enterDemoRole(role,target=null){
  if(!['Управляющий','Официант'].includes(role))return;
  if(state.compactDemo&&state.route==='roles'&&role!==(state.guideManagerDone?'Официант':'Управляющий'))return;
- if(role==='Официант'&&!state.employees.some(e=>e.id==='e1'&&e.active!==false)){showToast('Демо-официант недоступен. Начните новую демонстрацию.');return}
- closeModal();state.auth=null;state.role=role;state.currentEmployee='e1';state.demoHandoff=null;
- state.route=role==='Управляющий'?'manager-pin':'staff-pin';
+ closeModal();state.auth=null;state.role=role;state.studyAssignmentId=null;state.resumeStudyAssignmentId=null;state.slowSelfQuiz=null;
+ if(role==='Управляющий'){state.currentEmployee='e1';state.demoHandoff=null;state.route='manager-pin'}
+ else if(state.compactDemo){state.currentEmployee='e1';state.route='staff-pin'}
+ else{
+  const e=activeEmployees().find(x=>x.id===target&&x.role==='Официант');
+  state.route=e?'staff-pin':'staff-select';
+  if(e){state.currentEmployee=e.id;state.demoHandoff={employeeId:e.id,stage:'pin'}}
+ }
  save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})
 }
 openRole=enterDemoRole;
-selectStaff=function(){enterDemoRole('Официант')};
-window.quickSwitchToWaiter=function(){if(state.compactDemo){if(!state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.itemId&&t.assignedByManager)){showToast('Сначала назначьте тест по одному салату');return}state.guideManagerDone=true;goRoles();return}enterDemoRole('Официант')};
+selectStaff=function(id){
+ if(state.compactDemo)return enterDemoRole('Официант');
+ const e=activeEmployees().find(x=>x.id===id&&x.role==='Официант');if(!e)return;
+ enterDemoRole('Официант',e.id)
+};
+window.quickSwitchToWaiter=function(){
+ if(state.compactDemo){if(!state.assignedTests.some(t=>t.employeeId==='e1'&&t.block==='Салаты'&&t.itemId&&t.assignedByManager)){showToast('Сначала назначьте тест по одному салату');return}state.guideManagerDone=true;goRoles();return}
+ const target=state.demoHandoff?.employeeId;
+ const pending=state.assignedTests.filter(t=>['new','opened'].includes(t.status)&&activeEmployees().some(e=>e.id===t.employeeId&&e.role==='Официант'));
+ enterDemoRole('Официант',pending.find(t=>t.employeeId===target)?.employeeId||pending.at(-1)?.employeeId||null)
+};
 window.quickSwitchToManager=function(){if(state.compactDemo){showToast('Завершите демонстрацию официанта или выйдите из сопровождения');return}enterDemoRole('Управляющий')};
 const baseRender=render;
 render=function(){
- if(state.route==='staff-select'){state.role='Официант';state.auth=null;state.currentEmployee='e1';state.route=state.employees.some(e=>e.id==='e1'&&e.active!==false)?'staff-pin':'roles';save()}
- if(state.auth==='staff'||state.route==='staff-pin'){state.currentEmployee='e1';state.role='Официант'}
+ if(state.compactDemo&&state.route==='staff-select'){state.role='Официант';state.auth=null;state.currentEmployee='e1';state.route=state.employees.some(e=>e.id==='e1'&&e.active!==false)?'staff-pin':'roles';save()}
+ if(state.compactDemo&&(state.auth==='staff'||state.route==='staff-pin')){state.currentEmployee='e1';state.role='Официант'}
  baseRender()
 };
 render()
