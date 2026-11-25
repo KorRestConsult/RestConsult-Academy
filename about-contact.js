@@ -3,8 +3,8 @@
   const SITE='https://restconsult.info/';
   const PHONE_DISPLAY='+7 906 543-13-48';
   const PHONE='tel:+79065431348';
-  const TELEGRAM='https://t.me/KorRestConsalt';
-  const TG_HANDLE='@KorRestConsalt';
+  const TELEGRAM='https://t.me/ilya_Vladislavovich_Kor';
+  const TG_HANDLE='@ilya_Vladislavovich_Kor';
   let modal=null;
 
   function ensureModal(){
