@@ -44,21 +44,21 @@ function currentStep(){
   if(r==='learn'&&state.studyAssignmentId&&!m)return step('.ra-assigned-menu','Выберите блюдо для изучения','Откройте любую позицию. Изучите её и вернитесь к списку. Для закрепления знаний можно пройти тест по блюду. Когда все позиции изучены, доступен тест по разделу.',3);
   if(m&&state.studyAssignmentId)return step('#modal .ra-study-actions .primary','Обучение продажам','Фото, цена, выход, состав, вкусные слова и скрипт. Изучайте меню так, чтобы уверенно рекомендовать гостю.',3);
   if(r==='assigned-test')return state.activeQuiz?.feedbackShown?step('.quiz-card .primary','Разбор ответа','Система объясняет ответ. Учебный тест не меняет рейтинг.',3):step('.quiz-options','Проверка знаний','Ответьте на вопрос по изученному материалу.',3);
-  if(r==='assigned-test-result')return step('.quiz-result .primary','Результат тренировки','Результат виден управляющему. При 100% можно отправить запрос на аттестацию.',3);
+  if(r==='assigned-test-result')return step('.quiz-result .primary','Результат тренировки',t?.score===100?'Результат виден управляющему. Теперь можно отправить запрос на аттестацию.':'Результат виден управляющему. Для запроса аттестации нужно 100%. Вернитесь в кабинет и продолжите знакомство с системой.',3);
   if(r==='assigned-attestation')return state.activeAttestation?.answers?.[state.activeAttestation.index]!==undefined?step('.attestation-next','Аттестация','Продолжите итоговую проверку.',3):step('.quiz-options','Аттестация','Ответьте без подсказок. Рейтинг изменится после подтверждения управляющим.',3);
   if(r==='assigned-attestation-result')return step('.attestation-result .primary','Результат отправлен','Управляющий увидит результат. Ваш рейтинг пока не изменился.',3);
   if(!state.guideRatingSeen)return step('.scorebox','Мой рейтинг','Личный рейтинг знаний. Он меняется только после принятой аттестации, а не тренировочных тестов.',2);
   if(a&&['new','opened'].includes(a.status))return step('.attestation-card .ra-assignment-actions .primary','Назначена аттестация','Пройдите проверку уже изученного раздела.',3);
   if(t&&!state.guideTrainingAttempt&&t.status!=='done')return t.materialReviewed?step('[data-prep-quiz],.assigned-test .ra-assignment-actions .primary','Тест по салатам','Материал изучен. Пройдите тренировочную проверку.',3):step('.assigned-test .ra-assignment-actions .ghost','Новое задание','Тест по разделу «Салаты». Откройте материалы и изучите каждую позицию.',3);
   if(t?.score===100&&!t.requestStatus&&document.querySelector('[data-prep-request]'))return step('[data-prep-request]','Готов к аттестации','Отправьте управляющему запрос. Он решит, когда проводить итоговую аттестацию.',4);
-  if(!state.guideSelfSeen){
-   if(r==='slow-self-quiz'){
+  if(r==='slow-self-quiz'){
     const q=state.slowSelfQuiz;
     if(q&&q.index<q.questions.length)return q.answered?step('.quiz-card .primary','Разбор ответа','После каждого ответа видны объяснения. Можно повторить тест сколько угодно раз.',4):step('.quiz-options','Самостоятельная проверка',q.itemId?'Вопросы только по выбранному блюду.':'Вопросы охватывают все блюда раздела.',4);
     if(q?.itemId)return step('[data-self-block]','От блюда к разделу','Уверены в знаниях? Проверьте весь раздел, не открывая каждую карточку.',4);
     if(document.querySelector('[data-self-request]'))return step('[data-self-request]','Готов к аттестации','Тренировка на 100% позволяет заявить о готовности управляющему.',4);
     return step('[data-self-return]','Результат раздела','Вернитесь в базу знаний. При необходимости повторите проверку.',4);
    }
+  if(!state.guideSelfSeen){
    if(r==='learn'&&state.learnArea==='kitchen'){
     if(m)return step('#modal .ra-study-actions .primary','Вся информация о блюде','Изучите фото, описание, выход, цену, состав, вкусные слова и рекомендации. Затем проверьте именно это блюдо.',4);
     return step('#menuBlock .menu-card','База знаний заведения','Выберите любое блюдо самостоятельно. Назначение от управляющего для этого не требуется.',4)
@@ -132,8 +132,76 @@ function learningSurface(){
  if(['assigned-test','assigned-test-result','assigned-attestation','assigned-attestation-result','slow-self-quiz'].includes(state.route))return document.querySelector('.quiz-shell')||document.querySelector('.official-attestation');
  return null
 }
+// Staff uses the same green/gold language as the manager, but an in-flow guide
+// never obscures training materials. One local arrow per actionable screen.
+function staffLearningNote(surface,s){
+ clear();
+ document.body.classList.add('ra-guide-reading','ra-staff-reading');
+ const list=surface.matches('.ra-assigned-menu,#menuBlock'),isModal=surface.id==='modal',studying=!!surface.querySelector('.ra-study-facts'),checks=!!surface.querySelector('.ra-check-phase'),report=!!surface.querySelector('.ra-ops-row'),mini=!!surface.querySelector('[data-training-read]'),result=!!surface.querySelector('.quiz-result,.attestation-result');
+ const assigned=!!state.studyAssignmentId,returnAssignment=!!window.raAssignedStudyResume?.(),blockReady=surface.querySelector('[data-study-block-test]:not(:disabled)');
+ const nextDish=surface.querySelector('.ra-dish-row[data-unread="1"] .ra-dish-open');
+ const nextQuestion=[...surface.querySelectorAll('.quiz-card .primary:not(:disabled),.attestation-next:not(:disabled)')].find(e=>e.getClientRects().length);
+ const area=state.learnArea==='bar'?'напиток':'блюдо';
+ let title=s.title,desc=s.desc,action=null,group=null,actionLabel='';
+ if(list){
+  if(assigned&&blockReady){title='Материал изучен';desc='Все позиции изучены. Теперь пройдите назначенный тест по разделу. Отдельные тренировки можно повторять.';action=blockReady}
+  else{title=assigned?'Изучите назначенный раздел':'Самостоятельное обучение';desc=assigned?'Выберите любое блюдо, изучите карточку и отметьте его изученным. Можно отдельно проверить знания по блюду. После всех позиций откроется тест раздела.':'Выберите '+area+', изучите карточку или пройдите отдельный тест. Тест по всему разделу доступен в любой момент. Когда закончите знакомство, продолжите демонстрацию.';action=nextDish||surface.querySelector('.ra-dish-open')}
+ }else if(studying){title='Изучите в своём темпе';desc='Фото, состав, выход, цена, вкусные слова и рекомендации помогают уверенно продавать. Прочитайте материал, затем выберите действие внизу карточки.';action=surface.querySelector('.ra-study-actions .primary')}
+ else if(checks){title='Контроль стандартов';desc=state.guideHall?'Задача отмечена. Управляющий видит факт выполнения. Продолжите демонстрацию.':'Отметьте выполненную задачу. Управляющий увидит сотрудника и время. Можно раскрыть любой раздел чек-листа.'}
+ else if(mini){title='Подготовка к тренингу';action=surface.querySelector('[data-training-read]')}
+ else if(result){title='Результат обучения';
+  if(returnAssignment){desc='Результат личной тренировки сохранён. Вернитесь к списку назначенных блюд, чтобы завершить задание.';action=surface.querySelector('[data-self-return]')}
+  else if(state.route==='slow-self-quiz'){desc=state.slowSelfQuiz?.itemId?'Можно повторить тест, проверить весь раздел или вернуться к меню. Когда будете готовы, продолжите демонстрацию.':s.desc;action=surface.querySelector('[data-self-request]')||surface.querySelector('[data-self-return]')}
+  else action=surface.querySelector('.quiz-result .primary,.attestation-result .primary');
+ }else if(!report){
+  if(nextQuestion){title='Разбор ответа';desc='Прочитайте объяснение и перейдите к следующему вопросу.';action=nextQuestion}
+  else{title='Проверка знаний';desc=state.route==='assigned-attestation'?'Выберите ответ самостоятельно. Рейтинг изменится после подтверждения управляющим.':'Прочитайте вопрос и выберите один ответ. Тренировка не меняет официальный рейтинг.';group=surface.querySelector('.quiz-options')}
+ }
+ let note=surface.querySelector(':scope > .ra-learning-note');
+ if(!note){
+  note=document.createElement('aside');note.className='ra-learning-note ra-staff-note';
+  note.innerHTML='<div class="ra-staff-meta"><span></span><button type="button" data-learning-back>Назад</button><button type="button" data-learning-quit>Выйти</button></div><h3></h3><p></p><div class="ra-staff-actions"></div>';
+  const anchor=isModal?surface.querySelector('.modal-head'):surface.querySelector('.quiz-top');
+  if(anchor&&anchor.parentElement===surface)anchor.after(note);else if(list&&assigned&&surface.querySelector('.ra-study-progress'))surface.querySelector('.ra-study-progress').after(note);else surface.prepend(note);
+  note.querySelector('[data-learning-back]').onclick=goBack;note.querySelector('[data-learning-quit]').onclick=finish;
+ }
+ note.querySelector('.ra-staff-meta span').textContent='Официант · '+s.n+' / 8';
+ note.querySelector('h3').textContent=title;note.querySelector('p').textContent=desc;
+ const actions=note.querySelector('.ra-staff-actions');
+ const optionalNext=(list&&!assigned)||(result&&state.route==='slow-self-quiz'&&!returnAssignment);
+ if(optionalNext){
+  let next=actions.querySelector('button');
+  if(!next){next=document.createElement('button');next.className='primary';actions.append(next)}
+  if(list){next.dataset.guideMenuNext='1';delete next.dataset.guideQuizNext}else{next.dataset.guideQuizNext='1';delete next.dataset.guideMenuNext}next.textContent='Продолжить демонстрацию';
+  next.onclick=()=>{if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true;state.slowSelfQuiz=null;state.studyAssignmentId=null;state.route='home';save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})};
+ }else if(actions.childElementCount)actions.replaceChildren();
+ if(report||checks){
+  let footer=surface.querySelector('.ra-reading-footer');
+  if(!footer){footer=document.createElement('div');footer.className='ra-reading-footer';footer.innerHTML='<button type="button" class="primary" data-report-continue>Продолжить</button>';surface.append(footer);footer.querySelector('button').onclick=()=>surface.querySelector('.closebtn')?.click()}
+  const b=footer.querySelector('button');b.disabled=checks&&!state.guideHall;
+  action=checks&&!state.guideHall?surface.querySelector('input[data-shift-id]:not(:checked):not(:disabled)')?.closest('label'):b;
+ }
+ // All earlier markers are cleared, including those in closed modals.
+ if(list&&assigned&&blockReady){
+  const footer=blockReady.closest('.ra-assignment-footer');
+  if(footer&&note.nextElementSibling!==footer){note.after(footer);requestAnimationFrame(()=>{if(footer.isConnected)footer.scrollIntoView({block:'nearest',behavior:'auto'})})}
+ }
+ const focus=action||group;
+ document.querySelectorAll('.ra-staff-focus').forEach(e=>{if(e!==focus)e.classList.remove('ra-staff-focus')});
+ document.querySelectorAll('.ra-local-cue,.ra-staff-pointer').forEach(e=>{if(e.parentElement!==focus)e.remove()});
+ if(focus){
+  focus.classList.add('ra-staff-focus');
+  // The whole answer group is framed, never a specific option.
+  if(action&&!focus.matches('input,select,textarea')&&!focus.querySelector(':scope > .ra-staff-pointer')){
+   const pointer=document.createElement('span');pointer.className='ra-staff-pointer';pointer.setAttribute('aria-hidden','true');
+   pointer.innerHTML='<svg viewBox="0 0 44 35"><path pathLength="1" d="M 3 3 C 24 3 31 12 34 29 M 24 21 L 34 29 L 41 18"/></svg>';
+   focus.append(pointer)
+  }
+ }
+}
 function learningNote(surface,s){
- clear(state.auth==='staff');
+ if(state.auth==='staff')return staffLearningNote(surface,s);
+ clear();
  document.body.classList.add('ra-guide-reading');
  const list=surface.matches('.ra-assigned-menu,#menuBlock'),isModal=surface.id==='modal',studying=!!surface.querySelector('.ra-study-facts'),checks=!!surface.querySelector('.ra-check-phase'),report=!!surface.querySelector('.ra-ops-row'),mini=!!surface.querySelector('[data-training-read]'),result=!!surface.querySelector('.quiz-result,.attestation-result');
  const title=list?'Выберите блюдо для изучения':report?s.title:checks?'Контроль стандартов':mini?'Подготовка к тренингу':studying?'Изучите в своём темпе':result?'Результат обучения':'Проверка знаний';
@@ -168,38 +236,12 @@ function learningNote(surface,s){
   if(!footer){footer=document.createElement('div');footer.className='ra-reading-footer';footer.innerHTML='<button type="button" class="primary" data-report-continue>Продолжить →</button>';surface.append(footer);footer.querySelector('button').onclick=()=>surface.querySelector('.closebtn')?.click()}
   const b=footer.querySelector('button');b.disabled=checks&&state.auth==='staff'&&!state.guideHall;
  }
- if(state.auth==='staff'){
-  let action=null;
-  if(list)action=surface.querySelector('.ra-dish-open');
-  else if(studying)action=surface.querySelector('.ra-study-actions .primary');
-  else if(result)action=surface.querySelector('[data-self-return],.quiz-result .primary,.attestation-result .primary');
-  else if(mini)action=surface.querySelector('[data-training-read]');
-  else if(checks)action=surface.querySelector('input[data-shift-id]:not(:checked):not(:disabled)')||surface.querySelector('[data-report-continue]:not(:disabled)');
-  else if(report)action=surface.querySelector('[data-report-continue]');
-  else if(state.route==='slow-self-quiz'||state.route==='assigned-test'||state.route==='assigned-attestation')action=[...surface.querySelectorAll('.quiz-card .primary:not(:disabled),.attestation-next:not(:disabled)')].find(e=>e.getClientRects().length);
-  // Never aim at an answer; give an inline cue near the answer group instead.
-  const cueTarget=(list?action?.closest('.ra-dish-row'):checks?action?.closest('label')||action:studying?action?.closest('.ra-study-actions'):action)||(!studying&&!list&&!report&&!checks&&!mini&&!result?surface.querySelector('.quiz-options'):null);
-  surface.querySelectorAll('.ra-local-cue').forEach(c=>{if(c.nextElementSibling!==cueTarget)c.remove()});
-  if(cueTarget&&cueTarget.parentElement&&!cueTarget.previousElementSibling?.classList.contains('ra-local-cue')){
-   const cue=document.createElement('div');cue.className='ra-local-cue';
-   const prompt=list?'Откройте любое блюдо':studying?'Когда изучите материал':result?'Выберите дальнейшее действие':checks?'Отметьте задачу или продолжите':mini?'Подтвердите изучение':report?'После просмотра':action?'Продолжите проверку':'Выберите один ответ';
-   cue.innerHTML='<span>'+prompt+'</span><svg viewBox="0 0 76 27" width="76" height="27" aria-hidden="true"><path pathLength="1" d="M 2 4 Q 21 0 37 8 T 62 20 M 51 20 Q 58 19 62 20 L 61 10"/></svg>';
-   cueTarget.before(cue);
-  }
-  // Connect the explanation to the actual visible list action only; no overlay while reading or answering.
-  if(list&&action){
-   const ar=action.getBoundingClientRect(),nr=note.getBoundingClientRect();
-   const vv=window.visualViewport,top=vv?.offsetTop||0,bottom=top+(vv?.height||innerHeight);
-   if(ar.top>=top&&ar.bottom<=bottom&&nr.bottom<ar.top-18&&nr.top>=top){window.RAPencil?.point(note,action,'staff-list|'+state.learnArea+'|'+(state.selfMenuBlock||state.studyAssignmentId||''))}
-   else window.RAPencil?.hide()
-  }else window.RAPencil?.hide();
- }
 
 }
 function place(){
 frame=0;recoverHandoff();document.body.classList.toggle('ra-native-guided',guided());
 const readingSurface=guided()?learningSurface():null;document.body.classList.toggle('ra-guide-reading',!!readingSurface);document.body.classList.toggle('ra-staff-reading',!!readingSurface&&state.auth==='staff');
-if(!readingSurface)document.querySelectorAll('.ra-learning-note,.ra-reading-footer,.ra-local-cue').forEach(n=>n.remove());
+if(!readingSurface){document.querySelectorAll('.ra-learning-note,.ra-reading-footer,.ra-local-cue,.ra-staff-pointer').forEach(n=>n.remove());document.querySelectorAll('.ra-staff-focus').forEach(n=>n.classList.remove('ra-staff-focus'))}
 const pinMode=['manager-pin','staff-pin'].includes(state.route);document.body.classList.toggle('ra-guide-pin',guided()&&pinMode);document.documentElement.style.setProperty('--ra-visible-height',(window.visualViewport?.height||innerHeight)+'px');
 if(document.getElementById('raProductIntro')?.classList.contains('show')){clear(true);const intro=document.getElementById('raProductIntro');window.RAPencil?.point(intro.querySelector('.ra-intro-categories'),intro.querySelector('[data-start]'),'intro');return}
 if(!guided()){clear();document.querySelectorAll('.role-card').forEach(b=>{b.disabled=false;b.removeAttribute('aria-disabled')});const root=document.getElementById('root');if(root&&!document.getElementById('raDemoLaunch')){const b=document.createElement('button');b.id='raDemoLaunch';b.className='primary';b.textContent='Начать демонстрацию';b.onclick=launch;root.prepend(b)}return}
@@ -208,7 +250,8 @@ let s=currentStep();if(!s){clear();return}
 if(readingSurface){document.querySelectorAll('.ra-learning-note').forEach(n=>{if(!readingSurface.contains(n))n.remove()});learningNote(readingSurface,s);return}
 if(modal()&&!s.sel.startsWith('#modal')&&!s.sel.startsWith('[data-review-accept]')&&!s.sel.startsWith('[data-training-read]'))s=step('#modal .closebtn','Вернуться к демонстрации','Закройте это окно и продолжите по выделенной кнопке.',s.n);
 if(state.route==='roles'){document.querySelectorAll('.role-card').forEach((b,i)=>{const enabled=i===(state.guideManagerDone?1:0);b.disabled=!enabled;b.setAttribute('aria-disabled',String(!enabled))})}
-const el=[...document.querySelectorAll(s.sel)].find(e=>e.getBoundingClientRect().width>0&&!e.disabled);
+let el=[...document.querySelectorAll(s.sel)].find(e=>e.getBoundingClientRect().width>0&&!e.disabled);
+if(!el&&state.auth==='staff'&&state.route==='home'&&!state.guideTrainingAttempt&&s.n===3){state.guideTrainingAttempt=true;save();s=currentStep();el=[...document.querySelectorAll(s.sel)].find(e=>e.getBoundingClientRect().width>0&&!e.disabled)}
 if(!el){clear();if(!card){card=document.createElement('aside');card.id='raNativeGuide';document.body.append(card);card.style.left='16px';card.style.top='90px';card.innerHTML='<div class="ra-native-meta"><span>Демонстрация</span><button data-back>Назад</button><button data-quit>Выйти</button></div><h3>Продолжить</h3><p>Вернитесь к предыдущему экрану, чтобы продолжить обучение.</p>';card.querySelector('[data-back]').onclick=goBack;card.querySelector('[data-quit]').onclick=finish}return}
 const key=s.sel+'|'+s.title;
 if(target!==el){target?.classList.remove('ra-native-target');target=el;el.classList.add('ra-native-target');reveal=true}
@@ -310,7 +353,7 @@ if(mgr&&e.target.closest('#roleBtn')&&state.assignedTests.some(t=>t.employeeId==
 if(state.route==='roles'&&e.target.closest('.role-card:nth-child(2)')&&state.guideManagerDone)rememberHandoff();
 if(staff&&state.route==='assigned-test-result'&&e.target.closest('.quiz-result .primary'))state.guideTrainingAttempt=true;
 if(staff&&rSelfResult(e)&&!window.raAssignedStudyResume?.()){if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true}
-if(staff&&s.n===4&&m&&close&&state.learnArea==='bar')state.guideBarSeen=true;
+if(staff&&s.n===4&&m&&close&&state.learnArea==='bar'&&!state.studyAssignmentId)state.guideBarSeen=true;
 
 if(staff&&s.n===5&&e.target.closest('[data-training-read]'))state.guideMini=true;
 if(staff&&s.n===6&&e.target.matches('#modal input[data-shift-id]'))state.guideHall=!!document.querySelector('#modal input[data-shift-id]:checked');

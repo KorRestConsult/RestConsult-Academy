@@ -45,21 +45,21 @@ blockHTML=function(area,block){
  return box.innerHTML
 };
 // Return from an individual practice test to the assigned list if it was opened there.
-let resumeAssignment=null;
-window.raAssignedStudyResume=()=>resumeAssignment;
+
+window.raAssignedStudyResume=()=>state.resumeStudyAssignmentId;
 window.raStudySelfTest=function(id){
  const x=findMenu(id),t=state.assignedTests.find(t=>t.id===state.studyAssignmentId);
  if(!x||!t||t.employeeId!==current().id)return;
- resumeAssignment=t.id;closeModal();state.studyAssignmentId=null;save();
+ state.resumeStudyAssignmentId=t.id;closeModal();state.studyAssignmentId=null;save();
  startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name))
 };
 const rawReturn=window.raSelfReturn;
 window.raSelfReturn=function(){
- if(resumeAssignment){const id=resumeAssignment;resumeAssignment=null;state.slowSelfQuiz=null;studyAssignmentMaterial(id);return}
+ if(state.resumeStudyAssignmentId){const id=state.resumeStudyAssignmentId;state.resumeStudyAssignmentId=null;state.slowSelfQuiz=null;studyAssignmentMaterial(id);return}
  rawReturn()
 };
 const rawRequest=window.raSelfRequest;
-window.raSelfRequest=function(){const id=resumeAssignment;rawRequest();if(id&&state.route==='learn'){resumeAssignment=null;studyAssignmentMaterial(id)}};
+window.raSelfRequest=function(){const id=state.resumeStudyAssignmentId;rawRequest();if(id&&state.route==='learn'){state.resumeStudyAssignmentId=null;studyAssignmentMaterial(id)}};
 const listBlock=blockHTML;
 blockHTML=function(area,block){
  const box=document.createElement('div');box.innerHTML=listBlock(area,block);
@@ -80,6 +80,6 @@ const renderList=render;
 render=function(){renderList();if(state.auth==='staff'&&state.route==='learn'&&!state.studyAssignmentId&&state.selfMenuBlock&&blocksFor(state.learnArea).includes(state.selfMenuBlock))showBlock(state.learnArea,state.selfMenuBlock)};
 
 const oldRestart=window.restartAcademyTour;
-window.restartAcademyTour=function(){resumeAssignment=null;state.selfKnowledge={};state.slowSelfQuiz=null;state.selfMenuBlock=null;return oldRestart.apply(this,arguments)};
+window.restartAcademyTour=function(){state.resumeStudyAssignmentId=null;state.selfKnowledge={};state.slowSelfQuiz=null;state.selfMenuBlock=null;return oldRestart.apply(this,arguments)};
 render()
 })();

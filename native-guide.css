@@ -103,10 +103,36 @@ body.ra-guide-reading .ra-reading-footer .primary:disabled{opacity:.45}
 body.ra-guide-reading #modal .ra-study-actions{flex-wrap:wrap;gap:10px}
 @media(max-width:520px){.ra-dish-row{gap:6px;padding:7px}.ra-dish-open img{width:48px;height:48px}.ra-dish-open b{font-size:14px}.ra-dish-row>.ghost{font-size:11px;max-width:100px;white-space:normal}}
 
-/* Staff learning keeps instructions in the document flow. No dark overlay. */
-.ra-staff-note{background:#f3f4ed;border-color:#dedfd3;border-left-color:#ad935f}
-.ra-local-cue{display:flex;align-items:center;gap:5px;color:#a52c28;font-size:12px;font-weight:600;margin:8px 0 4px;pointer-events:none;flex-basis:100%;grid-column:1/-1}
-.ra-local-cue svg{width:76px;height:27px;flex-shrink:0;overflow:visible}
-.ra-local-cue path{fill:none;stroke:#d12426;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:raPencilDraw .65s ease .95s forwards}
-body.ra-guide-reading.ra-staff-reading #raPencilArrow{display:block!important}
-@media(prefers-reduced-motion:reduce){.ra-local-cue path{animation:none;stroke-dashoffset:0}}
+/* Staff guidance: the manager's green and brass, with no reading overlay. */
+.ra-learning-note.ra-staff-note{display:block;background:#284c39;color:#fffdf8;border:1px solid #d2ae68;border-radius:16px;padding:15px 18px;margin:12px 0 20px;box-shadow:0 8px 22px #25382d24;font-family:Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+.ra-staff-note .ra-staff-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;letter-spacing:.04em;color:#e2d9bf}
+.ra-staff-note .ra-staff-meta button{background:none;border:0;color:#fffdf8;font-size:12px;padding:5px;min-height:36px!important}
+.ra-staff-note h3{font:500 23px/1.15 Baskerville,Georgia,serif;margin:8px 0 5px;color:#fffdf8!important}
+.ra-staff-note p{font:400 14px/1.45 Inter,-apple-system,sans-serif;color:#fffdf8!important;margin:0}
+.ra-staff-note .ra-staff-actions:not(:empty){margin-top:12px}
+.ra-staff-note .primary{background:#fffdf8!important;color:#284c39!important;border-color:#ad935f!important}
+.ra-staff-focus{position:relative;outline:3px solid #bc9a57!important;outline-offset:2px!important;box-shadow:0 0 0 1px #fff9e8,0 0 10px #d2ae6860!important}
+.ra-staff-pointer{position:absolute;right:10px;top:-27px;width:39px;height:35px;pointer-events:none;z-index:4;display:block}
+.ra-staff-pointer svg{width:100%;height:100%;overflow:visible;display:block}
+.ra-staff-pointer path{fill:none;stroke:#d12426;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:raPencilDraw .65s ease 1s forwards}
+.ra-assignment-footer{margin:22px 0 10px;padding:14px 0 0;border-top:1px solid #dedfd3;display:flex;justify-content:flex-end}
+body.ra-staff-reading .ra-study-actions{padding-top:22px!important}
+body.ra-staff-reading .ra-dish-list{gap:12px}
+body.ra-staff-reading .ra-dish-open{overflow:visible}
+body.ra-staff-reading #modal .modal-head{position:static!important}
+@media(max-width:767px){
+ body.ra-staff-reading #nav{display:none!important}
+ body.ra-staff-reading #root{padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+ .ra-staff-note{padding:12px 13px!important}
+ .ra-staff-note h3{font-size:20px}
+ .ra-staff-note p{font-size:12px!important;line-height:1.45!important}
+ .ra-staff-note .ra-staff-meta button{min-height:32px!important}
+ .ra-assignment-footer .primary{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.ra-staff-pointer path{animation:none;stroke-dashoffset:0}}
+
+body.ra-staff-reading .ra-dish-row:has(.ra-staff-pointer){margin-top:22px}
+body.ra-staff-reading .ra-study-actions .ra-staff-focus,body.ra-staff-reading .quiz-card .primary.ra-staff-focus,body.ra-staff-reading .split-actions .ra-staff-focus{margin-top:22px}
+body.ra-staff-reading .ra-assignment-footer:has(.ra-staff-pointer){padding-top:30px}
+body.ra-staff-reading .ra-reading-footer:has(.ra-staff-pointer){padding-top:30px}
+body.ra-staff-reading .ra-staff-focus:not(.quiz-options){overflow:visible!important}
