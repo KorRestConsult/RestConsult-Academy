@@ -6,7 +6,7 @@ function backToMenu(q){state.slowSelfQuiz=null;state.studyAssignmentId=null;stat
 window.raSelfReturn=function(){const q=state.slowSelfQuiz;if(q)backToMenu(q)};
 window.raSelfRetry=function(){const q=state.slowSelfQuiz;if(!q)return;startSelfSlowQuiz(q.area,encodeURIComponent(q.block),q.itemId,encodeURIComponent(q.label))};
 function pass(q){
- if(!q||q.index<q.questions.length||q.recorded)return;
+ if(!q||q.index<q.questions.length||q.recorded||q.guidedDishPreview)return;
  q.recorded=true;
  const score=Math.round(q.score/q.questions.length*100);
  const k=key(q.area,q.block,q.itemId),prev=records()[k];
@@ -25,6 +25,7 @@ const selfRender=renderStaff;
 renderStaff=function(){
  const q=state.slowSelfQuiz;
  if(state.route!=='slow-self-quiz'||!q||q.index<q.questions.length)return selfRender();
+ if(q.guidedDishPreview)return '<section class="quiz-shell"><div class="quiz-card quiz-result"><div class="quiz-kicker">Демонстрационный тест · завершён</div><div class="result-circle"><strong>'+q.score+'/'+q.questions.length+'</strong></div><h1>'+esc(q.label)+'</h1><p>Отлично! Вы прошли пять вопросов с подсказками.</p><p>В обычном режиме официант отвечает самостоятельно. Для готовности к аттестации необходимо изучить весь назначенный раздел и пройти тест на 100%. Демонстрационный результат не влияет на рейтинг.</p><button class="primary" data-demo-dish-next onclick="raFinishDishPreview()">Продолжить демонстрацию</button></div></section>';
  pass(q);
  const p=state.assignedTests.find(t=>t.id===q.preparationId),score=Math.round(q.score/q.questions.length*100);
  const request=p&&score===100&&!['requested','assigned','accepted'].includes(p.requestStatus);
@@ -50,8 +51,14 @@ window.raAssignedStudyResume=()=>state.resumeStudyAssignmentId;
 window.raStudySelfTest=function(id){
  const x=findMenu(id),t=state.assignedTests.find(t=>t.id===state.studyAssignmentId);
  if(!x||!t||t.employeeId!==current().id)return;
+ const preview=window.raGuideDishPreview?.(t);
  state.resumeStudyAssignmentId=t.id;closeModal();state.studyAssignmentId=null;save();
- startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name))
+ startSelfSlowQuiz(x.area,encodeURIComponent(x.block),x.id,encodeURIComponent(x.name),preview)
+};
+window.raFinishDishPreview=function(){
+ const q=state.slowSelfQuiz;if(!q?.guidedDishPreview||q.index<q.questions.length)return;
+ state.guideAssignmentPreview=true;state.guideTrainingAttempt=true;state.resumeStudyAssignmentId=null;state.slowSelfQuiz=null;state.studyAssignmentId=null;state.route='home';save();render();
+ (window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})
 };
 const rawReturn=window.raSelfReturn;
 window.raSelfReturn=function(){

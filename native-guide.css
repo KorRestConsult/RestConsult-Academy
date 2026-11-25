@@ -136,3 +136,8 @@ body.ra-staff-reading .ra-study-actions .ra-staff-focus,body.ra-staff-reading .q
 body.ra-staff-reading .ra-assignment-footer:has(.ra-staff-pointer){padding-top:30px}
 body.ra-staff-reading .ra-reading-footer:has(.ra-staff-pointer){padding-top:30px}
 body.ra-staff-reading .ra-staff-focus:not(.quiz-options){overflow:visible!important}
+
+/* The five-question assisted demo reserves room for its one red pointer. */
+body.ra-staff-reading .quiz-option[data-demo-correct].ra-staff-focus{margin-top:23px!important}
+body.ra-staff-reading .quiz-option[data-demo-correct] .ra-staff-pointer{right:14px}
+body.ra-staff-reading .ra-staff-actions .ra-staff-focus{margin-top:16px}

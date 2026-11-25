@@ -64,7 +64,7 @@ function currentStep(){
     return step('#menuBlock .menu-card','База знаний заведения','Выберите любое блюдо самостоятельно. Назначение от управляющего для этого не требуется.',4)
    }
    if(r==='learn')return step('.head button[onclick="go(\'home\')"]','Личный кабинет','Вернитесь к базе знаний кухни.',4);
-   return step('.area-card[onclick*="kitchen"]','Свободное обучение','Не нужно ждать задания от управляющего: сотрудник сам находит нужное блюдо, изучает его и проверяет свои знания.',4)
+   return step('.area-card[onclick*="kitchen"]','Свободное обучение','Точно так же официант может учиться без задания управляющего. Посмотрите базу кухни — повторять тест не нужно.',4)
   }
   if(!state.guideBarSeen){
    if(r==='learn'&&state.learnArea==='bar'){
@@ -103,7 +103,7 @@ function goBack(){
  restoring=true;Object.assign(state,prev);state.studyAssignmentId=null;save();render();restoring=false;views.push(view());lastKey='';schedule()
 }
 function clear(keepArrow=false){if(!keepArrow)window.RAPencil?.hide();target?.classList.remove('ra-native-target');target=null;card?.remove();card=null;spot?.remove();spot=null}
-function finish(){clearHandoff();document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
+function finish(){clearHandoff();if(state.slowSelfQuiz?.guidedDishPreview){state.slowSelfQuiz=null;state.studyAssignmentId=state.resumeStudyAssignmentId||null;state.resumeStudyAssignmentId=null;state.route=state.studyAssignmentId?'learn':'home'}document.querySelectorAll('.ra-learning-note,.ra-reading-footer').forEach(n=>n.remove());document.body.classList.remove('ra-guide-reading');state.compactDemo=false;state.demoHandoff=null;localStorage.setItem('ra-tour:optout','1');save();clear();render()}
 function launch(){window.RASalesIntro?.show();schedule()}
 // Scroll the actual scrolling container and cancel competing smooth navigation.
 const priorScroll=window.raScrollPage;
@@ -141,19 +141,25 @@ function staffLearningNote(surface,s){
  const nextDish=surface.querySelector('.ra-dish-row[data-unread="1"] .ra-dish-open');
  const nextQuestion=[...surface.querySelectorAll('.quiz-card .primary:not(:disabled),.attestation-next:not(:disabled)')].find(e=>e.getClientRects().length);
  const area=state.learnArea==='bar'?'напиток':'блюдо';
+ const guidedDish=state.route==='slow-self-quiz'&&state.slowSelfQuiz?.guidedDishPreview;
+ const singleDish=assigned&&!!window.raGuideDishPreview?.(state.assignedTests.find(t=>t.id===state.studyAssignmentId));
  let title=s.title,desc=s.desc,action=null,group=null;
  if(list){
-  if(assigned&&blockReady){title='Материал изучен';desc='Все позиции изучены. Теперь пройдите назначенный тест по разделу. Отдельные тренировки можно повторять.';action=blockReady}
-  else{title=assigned?'Изучите назначенный раздел':'Самостоятельное обучение';desc=assigned?'Управляющий назначил весь раздел. Откройте любое блюдо: здесь есть всё для уверенной рекомендации гостю. Затем отметьте изучение или проверьте себя.':'Вся база меню доступна без назначения. Откройте '+area+' или тест по разделу. Можете продолжить знакомство, не повторяя уже показанный процесс.';action=nextDish||surface.querySelector('.ra-dish-open')}
- }else if(studying){title='Изучите в своём темпе';desc='Здесь не просто состав: официант учится объяснять вкус и уверенно рекомендовать блюдо гостю. Прочитайте карточку, затем вернитесь к списку или проверьте себя.';action=surface.querySelector('.ra-study-actions .primary')}
+  if(singleDish){title='Выберите один салат';desc='Вы видите весь раздел, назначенный управляющим. Для знакомства с системой изучите только одно блюдо. Откройте любой салат.';action=surface.querySelector('.ra-dish-open')}
+  else if(assigned&&blockReady){title='Материал изучен';desc='Все позиции изучены. Теперь пройдите назначенный тест по разделу. Отдельные тренировки можно повторять.';action=blockReady}
+  else{title=assigned?'Изучите назначенный раздел':'Самостоятельное обучение';desc=assigned?'Управляющий назначил весь раздел. Откройте любое блюдо: здесь есть всё для уверенной рекомендации гостю. Затем отметьте изучение или проверьте себя.':'Вся база меню доступна без назначения. Здесь можно открыть любое '+area+' или проверить знания раздела. Мы уже показали механизм теста — продолжите демонстрацию.';action=nextDish||surface.querySelector('.ra-dish-open')}
+ }else if(studying&&singleDish){title='Подготовьтесь к тесту';desc='Внимательно изучите состав блюда, потому что впереди тест. Изучите скрипт продажи, цену, выход и вкусные слова. Затем ответьте на пять вопросов.';action=surface.querySelector('.ra-study-actions .primary')}
+ else if(studying){title='Изучите в своём темпе';desc='Здесь не просто состав: официант учится объяснять вкус и уверенно рекомендовать блюдо гостю. Прочитайте карточку, затем вернитесь к списку или проверьте себя.';action=surface.querySelector('.ra-study-actions .primary')}
  else if(checks){title='Контроль стандартов';desc=state.guideHall?'Задача отмечена. Управляющий видит факт выполнения. Продолжите демонстрацию.':'Отметьте выполненную задачу. Управляющий увидит сотрудника и время. Можно раскрыть любой раздел чек-листа.'}
  else if(mini){title='Подготовка к тренингу';action=surface.querySelector('[data-training-read]')}
  else if(result){title='Результат обучения';
-  if(returnAssignment){desc='Результат личной тренировки сохранён. Вернитесь к списку назначенных блюд, чтобы завершить задание.';action=surface.querySelector('[data-self-return]')}
+  if(guidedDish){title='Отличный результат';desc='Вы увидели, как работает обучение на одном блюде. В настоящем тесте подсказок нет. Продолжим знакомство с кабинетом.';action=surface.querySelector('[data-demo-dish-next]')}
+  else if(returnAssignment){desc='Результат личной тренировки сохранён. Вернитесь к списку назначенных блюд, чтобы завершить задание.';action=surface.querySelector('[data-self-return]')}
   else if(state.route==='slow-self-quiz'){desc=state.slowSelfQuiz?.itemId?'Можно повторить тест, проверить весь раздел или вернуться к меню. Когда будете готовы, продолжите демонстрацию.':s.desc;action=surface.querySelector('[data-self-request]')||surface.querySelector('[data-self-return]')}
   else action=surface.querySelector('.quiz-result .primary,.attestation-result .primary');
  }else if(!report){
-  if(nextQuestion){title='Разбор ответа';desc='Прочитайте объяснение и перейдите к следующему вопросу.';action=nextQuestion}
+  if(nextQuestion){title=guidedDish?'Верно!':'Разбор ответа';desc='Прочитайте объяснение и перейдите к следующему вопросу.';action=nextQuestion}
+  else if(guidedDish){title='Вопрос '+(state.slowSelfQuiz.index+1)+' из 5';desc='В демонстрации мы подсказываем правильный ответ. Нажмите выделенный вариант.';action=surface.querySelector('[data-demo-correct]')}
   else{title='Проверка знаний';desc=state.route==='assigned-attestation'?'Выберите ответ самостоятельно. Рейтинг изменится после подтверждения управляющим.':'Прочитайте вопрос и выберите один ответ. Тренировка не меняет официальный рейтинг.';group=surface.querySelector('.quiz-options')}
  }
  let note=surface.querySelector(':scope > .ra-learning-note');
@@ -169,9 +175,9 @@ function staffLearningNote(surface,s){
  const actions=note.querySelector('.ra-staff-actions');
  const previewReady=returnAssignment&&state.route==='slow-self-quiz'&&(state.slowSelfQuiz?.answered||state.slowSelfQuiz?.index>0);
  const optionalNext=(list&&!assigned)||(result&&state.route==='slow-self-quiz'&&!returnAssignment);
- const shortPreview=previewReady&&!result;
- const completedExample=returnAssignment&&result;
- const canSkipAssignment=list&&assigned&&!blockReady&&(state.assignmentStudyProgress?.[state.studyAssignmentId]?.reviewedIds||[]).length>0;
+ const shortPreview=previewReady&&!result&&!guidedDish;
+ const completedExample=returnAssignment&&result&&!guidedDish;
+ const canSkipAssignment=list&&assigned&&!singleDish&&!blockReady&&(state.assignmentStudyProgress?.[state.studyAssignmentId]?.reviewedIds||[]).length>0;
  if(shortPreview||completedExample||canSkipAssignment){
   desc+=(shortPreview||completedExample?' Для запроса на аттестацию нужно изучить весь раздел и сдать назначенный тест на 100%.':' Для запроса аттестации необходимо изучить все позиции и пройти тест раздела на 100%.');
   note.querySelector('p').textContent=desc+' Если продолжите сейчас, задание останется незавершённым.';
@@ -182,6 +188,7 @@ function staffLearningNote(surface,s){
   if(!next){next=document.createElement('button');next.className='primary';actions.append(next)}
   if(list){next.dataset.guideMenuNext='1';delete next.dataset.guideQuizNext}else{next.dataset.guideQuizNext='1';delete next.dataset.guideMenuNext}next.textContent='Продолжить демонстрацию';
   next.onclick=()=>{if(state.learnArea==='bar')state.guideBarSeen=true;else state.guideSelfSeen=true;state.slowSelfQuiz=null;state.studyAssignmentId=null;state.route='home';save();render();(window.raScrollPage||window.scrollTo.bind(window))({top:0,behavior:'auto'})};
+  if(list&&!assigned&&state.guideAssignmentPreview)action=next;
  }else if(shortPreview||completedExample||canSkipAssignment){
   let next=actions.querySelector('[data-guide-preview-next]');
   if(!next){actions.replaceChildren();next=document.createElement('button');next.className='primary';next.dataset.guidePreviewNext='1';actions.append(next)}
@@ -205,6 +212,7 @@ function staffLearningNote(surface,s){
  document.querySelectorAll('.ra-staff-focus').forEach(e=>{if(e!==focus)e.classList.remove('ra-staff-focus')});
  document.querySelectorAll('.ra-local-cue,.ra-staff-pointer').forEach(e=>{if(e.parentElement!==focus)e.remove()});
  if(focus){
+  const newlyFocused=!focus.classList.contains('ra-staff-focus');
   focus.classList.add('ra-staff-focus');
   // The whole answer group is framed, never a specific option.
   if(action&&!focus.matches('input,select,textarea')&&!focus.querySelector(':scope > .ra-staff-pointer')){
@@ -212,6 +220,7 @@ function staffLearningNote(surface,s){
    pointer.innerHTML='<svg viewBox="0 0 44 35"><path pathLength="1" d="M 3 3 C 24 3 31 12 34 29 M 24 21 L 34 29 L 41 18"/></svg>';
    focus.append(pointer)
   }
+  if(guidedDish&&!result&&newlyFocused)requestAnimationFrame(()=>{if(focus.isConnected){const r=focus.getBoundingClientRect(),vv=window.visualViewport;if(r.bottom>(vv?.height||innerHeight)-16)focus.scrollIntoView({block:'nearest',behavior:'auto'})}});
  }
 }
 function learningNote(surface,s){
