@@ -141,3 +141,31 @@ body.ra-staff-reading .ra-staff-focus:not(.quiz-options){overflow:visible!import
 body.ra-staff-reading .quiz-option[data-demo-correct].ra-staff-focus{margin-top:23px!important}
 body.ra-staff-reading .quiz-option[data-demo-correct] .ra-staff-pointer{right:14px}
 body.ra-staff-reading .ra-staff-actions .ra-staff-focus{margin-top:16px}
+
+/* Long downwards arrows: reserved space, never drawn across readable material. */
+.ra-long-arrow-target{margin-top:90px!important}
+.ra-long-arrow-target .ra-staff-pointer{width:62px;height:90px;top:-88px;right:calc(50% - 31px)}
+.ra-reading-footer:has(.ra-long-arrow-target){padding-top:10px!important}
+.ra-study-actions:has(.ra-long-arrow-target){align-items:flex-end}
+body.ra-guide-reading .ra-staff-focus{position:relative;outline:3px solid #bc9a57!important;outline-offset:2px!important}
+body.ra-guide-reading .ra-staff-focus:not(.quiz-options){overflow:visible!important}
+.ra-month-schedule{padding:2px 0 12px}
+.ra-month-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0}
+.ra-month-head h3{font:500 24px Baskerville,Georgia,serif;text-transform:capitalize;margin:0;text-align:center}
+.ra-month-head button{min-width:44px;min-height:44px;font-size:24px}
+.ra-month-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 18px}
+.ra-month-summary>div{background:#f3f1e8;border:1px solid #dedfd3;border-radius:12px;padding:12px}
+.ra-month-summary span{display:block;color:#59665b;font-size:12px}
+.ra-month-summary strong{display:block;font:500 32px Baskerville,Georgia,serif;color:#284c39}
+.ra-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.ra-month-week{text-align:center;font-size:11px;color:#59665b;padding:4px 0}
+.ra-month-day{min-height:56px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:8px 2px;border-radius:8px;border:1px solid #e3e2d7;font-size:12px}
+.ra-month-day.working{background:#284c39;color:#fffdf8;border-color:#284c39}
+.ra-month-day.rest{background:#f3f1e8;color:#777d70}
+.ra-month-day.today{outline:2px solid #bc9a57;outline-offset:1px}
+.ra-month-day span{font-size:11px;white-space:nowrap}
+.ra-month-legend{font-size:12px;color:#59665b;margin:14px 0 0}
+.ra-month-legend span{color:#284c39}
+#nav .ra-exit-icon{display:flex;align-items:center;justify-content:center}
+#nav .ra-exit-icon svg{width:22px;height:22px;display:block}
+@media(max-width:520px){.ra-month-grid{gap:3px}.ra-month-day{min-height:45px;padding:5px 1px}.ra-month-head h3{font-size:21px}}
